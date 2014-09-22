@@ -27,7 +27,6 @@
 #  Modified summer 2014 to include metadata with file information,
 #    refining code to be "DRY", importing more metadata and path info
 #    from excel master file
-# test edit
 
 
 ########################################################################################
