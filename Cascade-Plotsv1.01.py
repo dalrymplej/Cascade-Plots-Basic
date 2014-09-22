@@ -106,7 +106,8 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,3])
         if not SI: data_yr = data_yr/cst.cfs_to_m3
-        graph_name = file_model_csv[:-4] + '_tot_dam_inflow'
+        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = graph_name + '_tot_reservoir_inflow'
         plot_structure = '4 by 2'
     elif data_type == 'tot_damdiff':
         time = data_v[:,0]
@@ -135,7 +136,8 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr_tmp = np.add(data_yr_tmp, data_tmp[:,4])  #Outflows
         if not SI: data_yr = data_yr/cst.cfs_to_m3
-        graph_name = file_model_csv[:-4] + '_tot_dam_outflow_minus_inflow'
+        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = graph_name + '_tot_res_outflow_minus_inflow'
         plot_structure = '4 by 2'
     elif data_type == 'damout':
         time = data_v[:,0]
@@ -158,7 +160,8 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,4])
         if not SI: data_yr = data_yr*cst.cfs_to_m3
-        graph_name = file_model_csv[:-4] + '_tot_dam_outflow'
+        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = graph_name + '_total_reservoir_outflow'
         plot_structure = '4 by 2'
     elif data_type == 'creek_sums':
         time = data_v[:,0]
@@ -185,7 +188,8 @@ def cascade(
                 creek_stat_data += stats_tmp
             current_number += 1
         mean_Q = creek_stat_data
-        graph_name = file_model_csv[:-4] + '_creek_sums'
+        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = graph_name + '_total_Creeks_gauged_no_ReservoirInfluence'
         plot_structure = '4 by 2'
     elif data_type == 'precipitation' or\
          data_type == 'snow' or\
@@ -198,6 +202,8 @@ def cascade(
         if not SI:
             data_yr = data_yr/cst.in_to_mm
         graph_name = file_model_csv[:-4] 
+        if data_type == 'precipitation':
+            graph_name = file_model_csv[:-4] + '_precipitation'
         if data_type == 'for_et':
             graph_name = file_model_csv[:-4] + '_forest_et'
         elif data_type == 'ag_et':
