@@ -308,7 +308,8 @@ def cascade(
     time = time[cst.day_of_year_oct1 - 1:] # water year
 #    times = time[cst.day_of_year_oct1 - 1:] # water year
     data_yr = data_yr[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
-    data_yr_tmp = data_yr_tmp[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
+    if data_type == 'tot_damdiff':
+        data_yr_tmp = data_yr_tmp[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
     data_length = len(time)
     num_water_yrs = len(time)/365
     start_year = 2011
@@ -358,9 +359,6 @@ def cascade(
         data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
     data_2D_clipped = np.empty_like(data_2D)
     data_2D_clipped = np.clip(data_2D, plot_lower_bound, plot_upper_bound)
-#    a = ct(data_2D)
-#    print a
-#    assert False
 
     ##########################################################
     # Assemble the data needed on the right-hand-side plots. #
@@ -1082,12 +1080,12 @@ def ct(water_yr_array):
     """
     import numpy as np
     num_water_yrs = water_yr_array.shape[0]
-    CT = np.zeros_like(range(0, water_yr_array.shape[0]))
-    m0 = np.zeros_like(range(0, water_yr_array.shape[0]))
-    m1 = np.zeros_like(range(0, water_yr_array.shape[0]))
+    CT = np.zeros_like(range(0, num_water_yrs))
+    m0 = np.zeros_like(range(0, num_water_yrs))
+    m1 = np.zeros_like(range(0, num_water_yrs))
     m0 = [np.trapz(water_yr_array[i,:], x=None, dx=1.0, axis=-1) for i in range(num_water_yrs)]
-    m1 = [np.trapz(np.multiply(water_yr_array[i,:],range(365)), x=None, dx=1.0, axis=-1) for i in range(89)]
-    CT = np.divide(m1,m0) + cst.day_of_year_oct1
+    m1 = [np.trapz(np.multiply(water_yr_array[i,:],range(365)), x=None, dx=1.0, axis=-1) for i in range(num_water_yrs)]
+    CT = np.divide(m1,m0) #+ cst.day_of_year_oct1
     return CT
 
 def metadata(fig,show,climates,files):
