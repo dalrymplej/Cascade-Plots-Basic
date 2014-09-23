@@ -106,7 +106,7 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,3])
         if not SI: data_yr = data_yr/cst.cfs_to_m3
-        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_tot_reservoir_inflow'
         plot_structure = '4 by 2'
     elif data_type == 'tot_damdiff':
@@ -136,7 +136,7 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr_tmp = np.add(data_yr_tmp, data_tmp[:,4])  #Outflows
         if not SI: data_yr = data_yr/cst.cfs_to_m3
-        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_tot_res_outflow_minus_inflow'
         plot_structure = '4 by 2'
     elif data_type == 'damout':
@@ -160,7 +160,7 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,4])
         if not SI: data_yr = data_yr*cst.cfs_to_m3
-        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_total_reservoir_outflow'
         plot_structure = '4 by 2'
     elif data_type == 'creek_sums':
@@ -188,7 +188,7 @@ def cascade(
                 creek_stat_data += stats_tmp
             current_number += 1
         mean_Q = creek_stat_data
-        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_total_Creeks_gauged_no_ReservoirInfluence'
         plot_structure = '4 by 2'
     elif data_type == 'precipitation' or\
@@ -868,10 +868,16 @@ def cascade(
        data_type == 'creek_sums':
         
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
-        if SI:
-            plt.xlabel('$Avg \, \Delta Q$ [m$^{\t{3}}$/s]', fontsize = 14)
+        if data_type != 'tot_damdiff':
+            if SI:
+                plt.xlabel('$Avg \, Q$ [m$^{\t{3}}$/s]', fontsize = 14)
+            else:
+                plt.xlabel('$Avg \, Q$ [cfs]', fontsize = 14)
         else:
-            plt.xlabel('$Avg \, \Delta Q$ [cfs]', fontsize = 14)
+            if SI:
+                plt.xlabel('$Avg \, \Delta Q$ [m$^{\t{3}}$/s]', fontsize = 14)
+            else:
+                plt.xlabel('$Avg \, \Delta Q$ [cfs]', fontsize = 14)
         
     elif data_type == 'temperature':
         
@@ -1108,6 +1114,16 @@ def metadata(fig,show,climates,files):
 #    plt.text(-100, 15, textstr, transform=ax.transAxes, fontsize=6,verticalalignment='top',bbox = props)
     return textstr
 
+def AltScenName(file_model_csv):
+##  file_model_csv = name of csv file  ##
+##  return the Alternative Scenario name ##
+    
+    # First line gets second-last piece between "_" and "_".
+    # Second line gets last piece after "_" but before "."
+    Alternative_Scenario_Name = str(file_model_csv).split("_")[-2] + \
+     "_" + str(file_model_csv).split("_")[-1].rpartition(".")[0]  # 
+     
+    return Alternative_Scenario_Name
 
 
 ########################################################################################
