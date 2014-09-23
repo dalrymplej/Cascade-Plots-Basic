@@ -106,7 +106,7 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,3])
         if not SI: data_yr = data_yr/cst.cfs_to_m3
-        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
         graph_name = graph_name + '_tot_reservoir_inflow'
         plot_structure = '4 by 2'
     elif data_type == 'tot_damdiff':
@@ -136,7 +136,7 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr_tmp = np.add(data_yr_tmp, data_tmp[:,4])  #Outflows
         if not SI: data_yr = data_yr/cst.cfs_to_m3
-        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
         graph_name = graph_name + '_tot_res_outflow_minus_inflow'
         plot_structure = '4 by 2'
     elif data_type == 'damout':
@@ -160,7 +160,7 @@ def cascade(
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,4])
         if not SI: data_yr = data_yr*cst.cfs_to_m3
-        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
         graph_name = graph_name + '_total_reservoir_outflow'
         plot_structure = '4 by 2'
     elif data_type == 'creek_sums':
@@ -188,7 +188,7 @@ def cascade(
                 creek_stat_data += stats_tmp
             current_number += 1
         mean_Q = creek_stat_data
-        graph_name = str(file_model_csv).partition("_")[0] # For this graph name, we will want to strip csv-specific parts of string  
+        graph_name = str(file_model_csv).partition("_")[-2] # For this graph name, we will want to strip csv-specific parts of string  
         graph_name = graph_name + '_total_Creeks_gauged_no_ReservoirInfluence'
         plot_structure = '4 by 2'
     elif data_type == 'precipitation' or\
@@ -1154,11 +1154,11 @@ total_number_of_plots = len(file_model_csv)
 
 ## DO NOT DELETE THE NEXT 6 LINES:
 ## If you want to plot all scenarios, uncomment this line:
-#AltScenarioList = list(cst.metadata.AltScenarios[0:6])
+AltScenarioList = list(cst.metadata.AltScenarios[0:6])
 
 ## If you only want to plot the scenario indicated in the master file, 
 ##   uncomment this line:
-AltScenarioList = [str(file_model_csv[0]).partition("_")[0]]  #List of length 1
+#AltScenarioList = [str(file_model_csv[0]).partition("_")[0]]  #List of length 1
 ## DO NOT DELETE THE TEXT ABOVE HERE ^^^^^
 
 # Make the plots.
