@@ -1190,6 +1190,6 @@ for plot_number in range(total_number_of_plots):
                 Display = Display_v[plot_number],
                 data_type = data_type_v[plot_number],
                 flood_Q_available = flood_Q_available_v[plot_number],
-                stats_available = stats_available_v[plot_number],
+#                stats_available = stats_available_v[plot_number],
                 SI = SI_v[plot_number]
                 )
