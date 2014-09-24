@@ -232,28 +232,31 @@ def cascade(
         plot_structure = '3 by 2'
     elif data_type == 'he_water_deficit':
         time = data_v[:,0]
-        data_pet = data_v[:,2]
-        data_et = data_v[:,1] # Read csv file
+        data_pet = data_v[:,5]
+        data_et = data_v[:,6] # Read csv file
         
         data_yr = np.add(data_pet, -1.*data_et)
-        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_high'
         plot_structure = '3 by 2'
+        data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
     elif data_type == 'le_water_deficit':
         time = data_v[:,0]
-        data_pet = data_v[:,2]
-        data_et = data_v[:,1] # Read csv file
+        data_pet = data_v[:,4]
+        data_et = data_v[:,3] # Read csv file
         
         data_yr = np.add(data_pet, -1.*data_et)
-        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_low'
         plot_structure = '3 by 2'
+        data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
     elif data_type == 'me_water_deficit':
         time = data_v[:,0]
-        data_pet = data_v[:,2]
-        data_et = data_v[:,1] # Read csv file
+        data_pet = data_v[:,8]
+        data_et = data_v[:,7] # Read csv file
         
         data_yr = np.add(data_pet, -1.*data_et)
-        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_mid'
         plot_structure = '3 by 2'
+        data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
     elif data_type == 'irrigation': 
         time = data_v[:,0]
         data_yr = np.add(data_v[:,2], data_v[:,3])
