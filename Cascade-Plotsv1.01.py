@@ -281,10 +281,7 @@ def cascade(
         if data_type == 'ag_potet': data_yr = data_v[:,4]
         if not SI: data_yr = data_yr/cst.in_to_mm
         graph_name = file_model_csv[:-4] + '_pet'
-        if data_type == 'for_et':
-            graph_name = file_model_csv[:-4] + '_forest_potet'
-        elif data_type == 'ag_et':
-            graph_name = file_model_csv[:-4] + '_ag_potet'
+        if data_type != 'potet': graph_name = file_model_csv[:-4] + data_type
         plot_structure = '3 by 2'
 
   # Do Error checking if Willamette at Portland
