@@ -286,6 +286,14 @@ def cascade(
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_total water use by people'
         plot_structure = '4 by 2'
+    elif data_type == 'unsat_demand':
+        time = data_v[:,0]
+        data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
+                          np.add(data_v[:,16],data_v[:,17])   )
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_total unsatisfied demand'
+        plot_structure = '4 by 2'
     elif data_type == 'aridity':
         time = data_v[:,0]
         data_pet = data_v[:,2]
@@ -483,6 +491,25 @@ def cascade(
             ylabel2 = '$Tot \,Extract \,$ [cfs]'
             ylabel4 = '$Extract\,$ [cfs]'
                   
+    if data_type == 'unsat_demand':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = Q_max_decadal
+        
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
+        
+        if SI:
+            ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Uns\,Dmd\,$ [m$^{\t{3}}$/s]'
+        else:
+            ylabel2 = '$Unsat \,Demand \,$ [cfs]'
+            ylabel4 = '$Uns\,Dmd\,$ [cfs]'
+                  
     elif data_type == 'aridity':
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -645,7 +672,8 @@ def cascade(
     ##########################################################
 
     if data_type != 'temperature' and data_type != 'aridity' and\
-                    data_type != 'water_deficit':
+                    data_type != 'water_deficit' and\
+                    data_type != 'unsat_demand':
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white','blue'],256)
     else:
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white',(0.9,0.1,0.1)],256)
@@ -748,7 +776,8 @@ def cascade(
            not data_type == 'ag_et' and \
            not data_type == 'ag_potet' and\
            not data_type == 'tot_extract' and\
-           not data_type == 'aridity':
+           not data_type == 'aridity' and\
+           not data_type == 'unsat_demand':
             ax4.legend(('Early century', 'Mid century', 'Late century'),
                        'upper right',frameon=False, fontsize=12)
         else:
@@ -816,7 +845,8 @@ def cascade(
         plt.xlabel('$Tot \, Ann \, Irrig\,$', fontsize = 14)
 
     elif data_type == 'tot_extract' or \
-       data_type == 'aridity':
+       data_type == 'aridity' or\
+       data_type == 'unsat_demand':
         plt.xlabel('$Min\,$', fontsize = 14)
 
     elif data_type == 'swe_pre' or data_type == 'aridity':
@@ -884,9 +914,9 @@ def cascade(
             
         elif data_type == 'temperature':
             plt.xlabel('$Max \, T$', fontsize = 14)
-        elif data_type == 'tot_extract':
-            plt.xlabel('$Max \,$', fontsize = 14)
-        elif data_type == 'aridity':
+        elif data_type == 'tot_extract' or\
+             data_type == 'aridity' or\
+             data_type == 'unsat_demand':
             plt.xlabel('$Max \,$', fontsize = 14)
 
     ##########################################################
@@ -969,6 +999,14 @@ def cascade(
             plt.xlabel('$Avg \, Extract\,$\n[m$^3$/s]', fontsize = 14)
         else:
             plt.xlabel('$Avg \, Extract\,$\n[thousand ac-ft]', fontsize = 14)
+
+    elif data_type == 'unsat_demand':
+
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        if SI:
+            plt.xlabel('$Avg \, Unsat\,$\n[m$^3$/s]', fontsize = 14)
+        else:
+            plt.xlabel('$Avg \, Unsat\,$\n[thousand ac-ft]', fontsize = 14)
 
     elif data_type == 'aridity':
 
