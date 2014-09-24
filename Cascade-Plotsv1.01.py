@@ -222,6 +222,38 @@ def cascade(
         plot_structure = '3 by 2'
         data_pre = data_pre[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
         data_swe = data_swe[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
+    elif data_type == 'water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,2]
+        data_et = data_v[:,1] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        plot_structure = '3 by 2'
+    elif data_type == 'he_water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,2]
+        data_et = data_v[:,1] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        plot_structure = '3 by 2'
+    elif data_type == 'le_water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,2]
+        data_et = data_v[:,1] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        plot_structure = '3 by 2'
+    elif data_type == 'me_water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,2]
+        data_et = data_v[:,1] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        plot_structure = '3 by 2'
     elif data_type == 'irrigation': 
         time = data_v[:,0]
         data_yr = np.add(data_v[:,2], data_v[:,3])
@@ -309,7 +341,6 @@ def cascade(
   # End error check
         
     time = time[cst.day_of_year_oct1 - 1:] # water year
-#    times = time[cst.day_of_year_oct1 - 1:] # water year
     data_yr = data_yr[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
     if data_type == 'tot_damdiff':
         data_yr_tmp = data_yr_tmp[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
@@ -358,7 +389,7 @@ def cascade(
         data_2D = np.subtract(data_2D_tmp,np.multiply(data_2D, how_much_outflow_bigger_than_inflow[:,None]))
         plot_lower_bound = np.percentile(data_2D,5)
         plot_upper_bound = np.percentile(data_2D,97.5)
-    else:
+    else:     ## All cases other than above
         data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
     data_2D_clipped = np.empty_like(data_2D)
     data_2D_clipped = np.clip(data_2D, plot_lower_bound, plot_upper_bound)
@@ -436,7 +467,6 @@ def cascade(
         extra = np.median(Q_max[-9:])
         Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_2 = Q_max_decadal
-#        plot_type_rhs_2 = 'boxplot'
         
         Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
         extra = np.median(Q_min[-9:])
@@ -522,7 +552,6 @@ def cascade(
         extra = np.median(T_max[-9:])
         T_max_decadal = np.reshape(np.append(T_max, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_2 = T_max_decadal
-#        plot_type_rhs_2 = 'boxplot'
         
         T_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
         extra = np.median(T_min[-9:])
@@ -553,7 +582,6 @@ def cascade(
         extra = np.median(et_data[-9:])
         et_data_decadal = np.reshape(np.append(et_data, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = et_data_decadal
-#        plot_type_rhs_1 = 'boxplot'
         
         if SI:
             ylabel2 = '$Evapotranspiration\,$ [mm/d]'
@@ -569,27 +597,41 @@ def cascade(
         extra = np.median(potet_data[-9:])
         et_data_decadal = np.reshape(np.append(potet_data, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = et_data_decadal
-#        plot_type_rhs_1 = 'boxplot'
         
         if SI:
             ylabel2 = '$Potential Evapotranspiration\,$ [mm/d]'
             ylabel4 = '$ET\,$ [mm/d]'
         else:
-            ylabel2 = '$Potential Evapotranspiration\,$ [in/d]'
+            ylabel2 = '$Potential \,Evapotranspiration\,$ [in/d]'
             ylabel4 = '$ET\,$ [in/d]'
+
+    elif data_type == 'water_deficit':
+        wd_data_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(wd_data_max[-9:])
+        wd_data_max_decadal = np.reshape(np.append(wd_data_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = wd_data_max_decadal
+        wd_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
+        yearly_max = wd_data
+        
+        if SI:
+            ylabel2 = '$Water \,Deficit\,$ [mm/d]'
+            ylabel4 = '$WD\,$ [mm/d]'
+        else:
+            ylabel2 = '$Water \,Deficit\,$ [in/d]'
+            ylabel4 = '$WD\,$ [in/d]'
 
 #   Calculate values for 3rd strip chart on right-hand-side (yearly avg)
     averaging_window = 9
     window_raw = np.array([])
     window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
     window = window_raw / np.sum(window_raw)  # normalized weights
-    if data_type != 'swe_pre':
+    if data_type != 'swe_pre' and data_type != 'water_deficit':
         yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         yearly_avg = movingaverage(
             yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
             window)[averaging_window:-averaging_window]
         data_set_rhs_3 = yearly_avg
-    else:
+    else:  
         yearly_max = movingaverage(
             yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
             window)[averaging_window:-averaging_window]
@@ -599,7 +641,8 @@ def cascade(
     #   Prepare the figure "canvas"                          #
     ##########################################################
 
-    if data_type != 'temperature' and data_type != 'aridity':
+    if data_type != 'temperature' and data_type != 'aridity' and\
+                    data_type != 'water_deficit':
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white','blue'],256)
     else:
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white',(0.9,0.1,0.1)],256)
@@ -795,6 +838,9 @@ def cascade(
          data_type == 'ag_potet':
         plt.xlabel('$Tot \, PET$', fontsize = 14)
             
+    elif data_type == 'water_deficit':
+        plt.xlabel('$Max \, WD$', fontsize = 14)
+
     ax2.yaxis.set_visible(False)
 
     ##########################################################
@@ -964,6 +1010,14 @@ def cascade(
             plt.xlabel('$Tot \, PET$ [mm]', fontsize = 14)
         else:
             plt.xlabel('$Tot \, PET$ [in]', fontsize = 14)
+
+    elif data_type == 'water_deficit':
+
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        if SI:
+            plt.xlabel('$Tot \, WD$ [mm]', fontsize = 14)
+        else:
+            plt.xlabel('$Tot \, WD$ [in]', fontsize = 14)
 
     xloc = plt.MaxNLocator(max_xticks)
     ax5.xaxis.set_major_locator(xloc)
@@ -1167,11 +1221,11 @@ total_number_of_plots = len(file_model_csv)
 
 ## DO NOT DELETE THE NEXT 6 LINES:
 ## If you want to plot all scenarios, uncomment this line:
-AltScenarioList = list(cst.metadata.AltScenarios[0:6])
+#AltScenarioList = list(cst.metadata.AltScenarios[0:6])
 
 ## If you only want to plot the scenario indicated in the master file, 
 ##   uncomment this line:
-#AltScenarioList = [str(file_model_csv[0]).partition("_")[0]]  #List of length 1
+AltScenarioList = [str(file_model_csv[0]).split("_")[-2]]  #List of length 1
 ## DO NOT DELETE THE TEXT ABOVE HERE ^^^^^
 
 # Make the plots.
