@@ -1258,7 +1258,8 @@ stats_available_v = cascade_plot_params.sheet_by_index(0).col_values(8)[1:]     
 SI_v = cascade_plot_params.sheet_by_index(0).col_values(9)[1:]                  # Metric or standard units
 breadth_v_tmp = cascade_plot_params.sheet_by_index(0).col_values(10)[1:]             # Breadth of simulations to create gray-scale
 
-breadth_v = [breadth_v_tmp[i].replace(" ","") for i in range(len(breadth_v_tmp))
+##WORKING HERE
+[breadth_v[i] = breadth_v_tmp[i].replace(" ","") for i in range(len(breadth_v_tmp))
 print breadth_v
 assert False
 
