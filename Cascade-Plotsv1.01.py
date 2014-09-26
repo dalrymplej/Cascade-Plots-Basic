@@ -27,6 +27,7 @@
 #  Modified summer 2014 to include metadata with file information,
 #    refining code to be "DRY", importing more metadata and path info
 #    from excel master file
+#  Added capability to grey-shade breadth of simulations
 
 
 ########################################################################################
@@ -1255,6 +1256,11 @@ flood_Q_available_v = cascade_plot_params.sheet_by_index(0).col_values(6)[1:]   
 data_type_v = cascade_plot_params.sheet_by_index(0).col_values(7)[1:]           # What type of data is this? Stream, Dam, etc.
 stats_available_v = cascade_plot_params.sheet_by_index(0).col_values(8)[1:]     # The stats file is available (True/False)
 SI_v = cascade_plot_params.sheet_by_index(0).col_values(9)[1:]                  # Metric or standard units
+breadth_v_tmp = cascade_plot_params.sheet_by_index(0).col_values(10)[1:]             # Breadth of simulations to create gray-scale
+
+breadth_v = [breadth_v_tmp[i].replace(" ","") for i in range(len(breadth_v_tmp))
+print breadth_v
+assert False
 
 flood_Q[:] = [element*cst.cfs_to_m3 for element in flood_Q]   # convert flood_Q from cfs to m3/s
 
