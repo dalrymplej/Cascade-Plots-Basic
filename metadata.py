@@ -17,19 +17,25 @@ def define_model_run(name):
         
     if "Ref_Run0" in Case:
         model = 'Reference (MIROC)'
+        short_name = 'Ref'
     elif "LowClim" in Case:  
         model = 'Low Climate Change (GFDL)'
+        short_name = "LowClim"
     elif "FireSuppress" in Case:  
         model = 'Upland Fire Suppression'
+        short_name = 'FireSuppress'
     elif "HighClim" in Case:  
         model = 'High Climate Change (Hadley)'
+        short_name = 'HighClim'
     elif "UrbExpand" in Case:  
         model = "Relaxed Urban Expansion"
+        short_name = 'UrbExpand'
     elif "HighPop" in Case:  
         model = "High Population Growth"
+        short_name = 'HighPop'
     else:
         raise UnknownFileType()
-    return model
+    return model, short_name
 
-model_run = define_model_run("first")
+model_run, short_name = define_model_run("first")
 ##print model_run
