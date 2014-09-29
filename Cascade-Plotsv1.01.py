@@ -55,21 +55,14 @@ def cascade(
     """
     
     import numpy as np
-#    from   pylab import plot, ylim, xlim, show, xlabel, ylabel, grid
     import matplotlib.pyplot as plt
-#    import matplotlib.mlab as mlab
-#    import matplotlib.cm as cm
     import xlrd
-#    import matplotlib.dates as dates
     import datetime
     import time as timetool, os.path
-#    import matplotlib.ticker as ticker
     import matplotlib as mpl
     import constants as cst   # constants.py contains constants used here
-#    import math
     import matplotlib.gridspec as gridspec
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
-#    from pprint import pprint
 
     np.set_printoptions(precision=3)
 
