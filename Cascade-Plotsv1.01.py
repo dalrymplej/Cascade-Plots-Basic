@@ -92,6 +92,9 @@ def cascade(
             stats_list, stats_available, SI \
             )
     
+    if 'deficit' in data_type:
+        data_type = 'water_deficit'
+    
     data_set_rhs_1, data_set_rhs_2, data_set_rhs_3 \
         = process_data(
             data_2D, data_yr, num_water_yrs, data_length, \
@@ -714,8 +717,8 @@ def collect_data( \
         plot_structure = '3 by 2'
     elif data_type == 'he_water_deficit':
         time = data_v[:,0]
-        data_pet = data_v[:,5]
-        data_et = data_v[:,6] # Read csv file
+        data_pet = data_v[:,6]
+        data_et = data_v[:,5] # Read csv file
         
         data_yr = np.add(data_pet, -1.*data_et)
         graph_name = file_model_csv[:-4] + '_Water_Deficit_high'
