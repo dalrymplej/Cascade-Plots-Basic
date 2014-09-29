@@ -73,7 +73,11 @@ def cascade(
     breadth_str = short_name + ',' + breadth_str
     breadth = breadth_str.split(",")  # breadth is list of model runs that will be grey-shaded.
     number_model_runs = len(breadth)
-#    file_model_csv = [file_model_csv.replace(short_name, Case) for Case in breadth]
+    
+    file_model_csv_list = [file_model_csv.replace(short_name, Case) for Case in breadth]
+    file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(short_name, Case) for Case in breadth]
+    print file_model_csv_list
+    assert False
 
     ###############################
     # Read data in from csv files #
