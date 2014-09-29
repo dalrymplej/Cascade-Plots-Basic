@@ -77,30 +77,63 @@ def cascade(
     file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(short_name, Case) for Case in breadth]
     
     file_stats_w_path = cst.path_auxilliary_files + file_stats
+    
+    inum = 0
+    for Case in breadth:
+        file_model_csv = file_model_csv_list[inum]
+        file_model_csv_w_path = file_model_csv_w_path_list[inum]
+    
+#       Collect data for plotting from csv file:
+        data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
+            start_year, end_year, graph_name, plot_structure, error_check, \
+            mass_balance_err_str, mean_Q \
+            \
+            = collect_data(
+                file_model_csv, file_model_csv_w_path, file_stats_w_path, \
+                data_type, data_type_list, \
+                stats_list, stats_available, SI \
+                )
+        
+        if 'deficit' in data_type:
+            data_type = 'water_deficit'
+        
+        data_set_rhs_1, data_set_rhs_2, data_set_rhs_3 \
+            = process_data(
+                data_2D, data_yr, num_water_yrs, data_length, \
+                data_type, data_type_list, SI,\
+                start_year, end_year
+                )
 
-    file_model_csv = file_model_csv_list[0]
-    file_model_csv_w_path = file_model_csv_w_path_list[0]
-    
-#   Collect data for plotting from csv file:
-    data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
-        start_year, end_year, graph_name, plot_structure, error_check, \
-        mass_balance_err_str, mean_Q \
-        \
-        = collect_data(
-            file_model_csv, file_model_csv_w_path, file_stats_w_path, \
-            data_type, data_type_list, \
-            stats_list, stats_available, SI \
-            )
-    
-    if 'deficit' in data_type:
-        data_type = 'water_deficit'
-    
-    data_set_rhs_1, data_set_rhs_2, data_set_rhs_3 \
-        = process_data(
-            data_2D, data_yr, num_water_yrs, data_length, \
-            data_type, data_type_list, SI,\
-            start_year, end_year
-            )
+        data_early, data_mid, data_late, window, averaging_window \
+            = process_bottom_strip(
+                data_2D, data_yr, num_water_yrs, data_length, \
+                data_type, data_type_list, SI,\
+                start_year, end_year
+                )
+                
+        if inum == 0:
+            data_set_rhs_3_min = data_set_rhs_3
+            data_set_rhs_3_max = data_set_rhs_3
+            data_bottom_min = np.amin(np.column_stack((data_early,
+                                                      data_mid,
+                                                      data_late)),1)
+            data_bottom_max = np.amax(np.column_stack((data_early,
+                                                      data_mid,
+                                                      data_late)),1)
+        else:
+            data_set_rhs_3_min = np.amin(np.column_stack((data_set_rhs_3,
+                                                         data_set_rhs_3_min)),1)
+            data_set_rhs_3_max = np.amin(np.column_stack((data_set_rhs_3,
+                                                         data_set_rhs_3_max)),1)
+            data_bottom_min = np.amin(np.column_stack((data_early,
+                                                      data_mid,
+                                                      data_late,
+                                                      data_bottom_min)),1)
+            data_bottom_max = np.amax(np.column_stack((data_early,
+                                                      data_mid,
+                                                      data_late,
+                                                      data_bottom_max)),1)
+        inum += 1
             
     ylabel2, ylabel4 \
         = get_labels(
@@ -161,31 +194,6 @@ def cascade(
     #   Prep the fourth plot (bottom strip)                  #
     ##########################################################
     
-    if data_type == 'swe_pre':
-        averaging_window = 9
-    else:
-        averaging_window = 49
-    window_raw = np.array([])
-    window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
-    window = window_raw / np.sum(window_raw)  # normalized weights
-
-    # Calculate moving averages (using binomial filter - in movingaverage).
-    # Prepend and append half of averaging window to data window so that moving average at early
-    #   and late time are correct.
-
-    data_early = movingaverage([np.mean(data_2D[0:29,i]) for i in range(365-averaging_window/2 , 364)] +
-                               [np.mean(data_2D[0:29,i]) for i in range(365)] +
-                               [np.mean(data_2D[0:29,i]) for i in range(0 , averaging_window/2)],
-                               window)[averaging_window/2 : 365+averaging_window/2]
-    data_mid   = movingaverage([np.mean(data_2D[30:59,i]) for i in range(365-averaging_window/2 , 364)] +
-                               [np.mean(data_2D[30:59,i]) for i in range(365)] +
-                               [np.mean(data_2D[30:59,i]) for i in range(0 , averaging_window/2)],
-                               window)[averaging_window/2 : 365+averaging_window/2]
-    data_late  = movingaverage([np.mean(data_2D[60:89,i]) for i in range(365-averaging_window/2 , 364)] +
-                               [np.mean(data_2D[60:89,i]) for i in range(365)] +
-                               [np.mean(data_2D[60:89,i]) for i in range(0 , averaging_window/2)],
-                               window)[averaging_window/2 : 365+averaging_window/2]
-
     ax4 = fig.add_subplot(gs1[1,0], aspect = 'auto', sharex=ax)
     ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_early, color="0.62", lw=1.5)
@@ -193,6 +201,8 @@ def cascade(
              data_mid, color="0.32", lw=1.5)
     ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_late, color="0.", lw=1.5)
+    ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
+             data_bottom_min, data_bottom_max, color="gray", alpha = 0.3)
     if stats_available:
         ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              movingaverage(
@@ -503,6 +513,8 @@ def cascade(
         else:
             plt.xlabel('$Tot \, WD$ [in]', fontsize = 14)
 
+    ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min, data_set_rhs_3_max, 
+                      color="gray", alpha = 0.3)
     xloc = plt.MaxNLocator(max_xticks)
     ax5.xaxis.set_major_locator(xloc)
     plt.ylim(start_year,end_year)
@@ -1213,8 +1225,48 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel4 = '$WD\,$ [in/d]'
     
     return ylabel2, ylabel4
-        
+
+
+def process_bottom_strip(data_2D, data_yr, num_water_yrs, data_length, \
+            data_type, data_type_list, SI,\
+            start_year, end_year):
+    """Returns 3 data sets for plotting on bottom strip
+    """
     
+    import numpy as np
+    
+    ##########################################################
+    #   Prep the fourth plot (bottom strip)                  #
+    ##########################################################
+    
+    if data_type == 'swe_pre':
+        averaging_window = 9
+    else:
+        averaging_window = 49
+    window_raw = np.array([])
+    window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
+    window = window_raw / np.sum(window_raw)  # normalized weights
+
+    # Calculate moving averages (using binomial filter - in movingaverage).
+    # Prepend and append half of averaging window to data window so that moving average at early
+    #   and late time are correct.
+
+    data_early = movingaverage([np.mean(data_2D[0:29,i]) for i in range(365-averaging_window/2 , 364)] +
+                               [np.mean(data_2D[0:29,i]) for i in range(365)] +
+                               [np.mean(data_2D[0:29,i]) for i in range(0 , averaging_window/2)],
+                               window)[averaging_window/2 : 365+averaging_window/2]
+    data_mid   = movingaverage([np.mean(data_2D[30:59,i]) for i in range(365-averaging_window/2 , 364)] +
+                               [np.mean(data_2D[30:59,i]) for i in range(365)] +
+                               [np.mean(data_2D[30:59,i]) for i in range(0 , averaging_window/2)],
+                               window)[averaging_window/2 : 365+averaging_window/2]
+    data_late  = movingaverage([np.mean(data_2D[60:89,i]) for i in range(365-averaging_window/2 , 364)] +
+                               [np.mean(data_2D[60:89,i]) for i in range(365)] +
+                               [np.mean(data_2D[60:89,i]) for i in range(0 , averaging_window/2)],
+                               window)[averaging_window/2 : 365+averaging_window/2]
+                               
+    return data_early, data_mid, data_late, window, averaging_window        
+    
+
 
 def n_take_k(n,k):
     """Returns (n take k),
