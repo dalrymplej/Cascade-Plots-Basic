@@ -64,7 +64,7 @@ def cascade(
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
     import metadata as md
 
-    np.set_printoptions(precision=3)
+    np.set_printoptions(precision=3)    
 
     model_run, short_name = md.define_model_run(file_model_csv)
     breadth_str = breadth_str.replace(" ","")
@@ -82,278 +82,30 @@ def cascade(
     file_model_csv_w_path = file_model_csv_w_path_list[0]
     
 #   Collect data for plotting from csv file:
-    data_2D, data_2D_clipped, data_yr, time, data_length,num_water_yrs, start_year,\
-        end_year, graph_name, plot_structure, error_check, mass_balance_err_str, \
-        mean_Q \
+    data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
+        start_year, end_year, graph_name, plot_structure, error_check, \
+        mass_balance_err_str, mean_Q \
         \
         = collect_data(
             file_model_csv, file_model_csv_w_path, file_stats_w_path, \
             data_type, data_type_list, \
             stats_list, stats_available, SI \
             )
+    
+    data_set_rhs_1, data_set_rhs_2, data_set_rhs_3 \
+        = process_data(
+            data_2D, data_yr, num_water_yrs, data_length, \
+            data_type, data_type_list, SI,\
+            start_year, end_year
+            )
+            
+    ylabel2, ylabel4 \
+        = get_labels(
+            data_2D, data_yr, num_water_yrs, data_length, \
+            data_type, data_type_list, SI,\
+            start_year, end_year
+            )
 
-
-    ##########################################################
-    # Assemble the data needed on the right-hand-side plots. #
-    # This differs with data_type.                           #
-    ##########################################################
-
-    if data_type == 'stream' or \
-       data_type == 'daminWdup' or \
-       data_type == 'damoutWdup' or \
-       data_type == 'damin' or \
-       data_type == 'damout' or \
-       data_type == 'tot_damin' or \
-       data_type == 'tot_damout' or\
-       data_type == 'tot_damdiff' or\
-       data_type == 'creek_sums':
-
-        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(Q_max[-9:])
-        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_2 = Q_max_decadal
-        
-        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
-        extra = np.median(Q_min[-9:])
-        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = Q_min_decadal
-        
-        if SI:
-            ylabel2 = '$Daily \, Q$ [m$^{\t{3}}$/s]'
-            ylabel4 = '$Discharge (Q)\,$ [m$^{\t{3}}$/s]'
-        else:
-            ylabel2 = '$Daily \, Q$ [cfs]'
-            ylabel4 = '$Discharge (Q)\,$ [cfs]'
-        if data_type == 'tot_damdiff':
-            if SI:
-                ylabel2 = '$Daily \, \Delta Q$ [m$^{\t{3}}$/s]'
-                ylabel4 = '$\Delta Discharge (\Delta Q)\,$ [m$^{\t{3}}$/s]'
-            else:
-                ylabel2 = '$Daily \, \Delta Q$ [cfs]'
-                ylabel4 = '$Discharge (\Delta Q)\,$ [cfs]'
-                  
-    elif data_type == 'snow':
-        swe_apr1 = data_yr[cst.day_of_year_apr1+(365-cst.day_of_year_oct1):data_length:365]
-        extra = np.median(swe_apr1[-9:])
-        swe_apr1_decadal = np.reshape(np.append(swe_apr1, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = swe_apr1_decadal
-        
-        if SI:
-            ylabel2 = '$Snow \,Water \,Equivalent\,$ [mm]'
-            ylabel4 = '$SWE\,$ [mm]'
-        else:
-            ylabel2 = '$Snow \,Water \,Equivalent\,$ [in]'
-            ylabel4 = '$SWE\,$ [in]'
-                
-    elif data_type == 'irrigation':
-        irigation_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
-        if SI: irigation_data = irigation_data*86400./1.e6  # convert from m3/s to millions of m3
-        if not SI: irigation_data = irigation_data/1.e3  # convert to thousands of ac-ft
-        extra = np.median(irigation_data[-9:])
-        irigation_data_decadal = np.reshape(np.append(irigation_data, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = irigation_data_decadal
-
-        if SI:
-            ylabel2 = '$Irrigation \,Rate\,$ [m$^3$/s]'
-            ylabel4 = '$Irrig \,Rate\,$ [m$^3$/s]'
-        else:
-            ylabel2 = '$Irrigation \,Rate\,$ [ac-ft/d]'
-            ylabel4 = '$Irrig \,Rate\,$ [ac-ft/d]'
-        
-    if data_type == 'tot_extract':
-
-        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(Q_max[-9:])
-        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_2 = Q_max_decadal
-        
-        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
-        extra = np.median(Q_min[-9:])
-        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = Q_min_decadal
-        
-        if SI:
-            ylabel2 = '$Tot \,Extract \,$ [m$^{\t{3}}$/s]'
-            ylabel4 = '$Extract\,$ [m$^{\t{3}}$/s]'
-        else:
-            ylabel2 = '$Tot \,Extract \,$ [cfs]'
-            ylabel4 = '$Extract\,$ [cfs]'
-                  
-    if data_type == 'unsat_demand':
-
-        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(Q_max[-9:])
-        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_2 = Q_max_decadal
-        
-        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
-        extra = np.median(Q_min[-9:])
-        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = Q_min_decadal
-        
-        if SI:
-            ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
-            ylabel4 = '$Uns\,Dmd\,$ [m$^{\t{3}}$/s]'
-        else:
-            ylabel2 = '$Unsat \,Demand \,$ [cfs]'
-            ylabel4 = '$Uns\,Dmd\,$ [cfs]'
-                  
-    elif data_type == 'aridity':
-        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(Q_max[-9:])
-        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_2 = Q_max_decadal
-        
-        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
-        extra = np.median(Q_min[-9:])
-        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = Q_min_decadal
-        
-        ylabel2 = '$Aridity \,Index$ [-]'
-        ylabel4 = '$Aridity$ [-]'
-                    
-    elif data_type == 'swe_pre':
-        swe_apr1 = data_2D[:,cst.day_of_year_apr1+(365-cst.day_of_year_oct1)-1]
-        extra = np.median(swe_apr1[-9:])
-        swe_apr1_decadal = np.reshape(np.append(swe_apr1, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = swe_apr1_decadal
-        yearly_max = [np.max(data_2D[i,61:150]) for i in range(num_water_yrs)]
-        
-        ylabel2 = '$SWE:Precip Ratio$ [-]'
-        ylabel4 = '$SWE:Precip$ [-]'
-                    
-    elif data_type == 'municipal':
-        municipal_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
-        if SI: municipal_data = municipal_data*86400./1.e6  # convert from m3/s to millions of m3
-        if not SI: municipal_data = municipal_data/1.e3  # convert to thousands of ac-ft
-        extra = np.median(municipal_data[-9:])
-        municipal_data_decadal = np.reshape(np.append(municipal_data, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = municipal_data_decadal
-
-        if SI:
-            ylabel2 = '$Municipal Use\,$ [m$^3$/s]'
-            ylabel4 = '$Mncpl Use\,$ [m$^3$/s]'
-        else:
-            ylabel2 = '$Municipal Use\,$ [ac-ft/d]'
-            ylabel4 = '$Mncpl Use\,$ [ac-ft/d]'
-        
-    elif data_type == 'water_rights':
-        unusedWR_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
-        if SI: unusedWR_data = unusedWR_data*86400./1.e6  # convert from m3/s to millions of m3
-        if not SI: unusedWR_data = unusedWR_data/1.e3  # convert to thousands of ac-ft
-        extra = np.median(unusedWR_data[-9:])
-        unusedWR_data_decadal = np.reshape(np.append(unusedWR_data, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = unusedWR_data_decadal
-
-        if SI:
-            ylabel2 = '$Unxczd \,Water \,Rights\,$ [m$^3$/s]'
-            ylabel4 = '$Unxczd \,Wtr \,Rt\,$ [m$^3$/s]'
-        else:
-            ylabel2 = '$Unxczd \,Water \,Rights\,$ [ac-ft/d]'
-            ylabel4 = '$Unxczd \,Wtr \,Rt\,$ [ac-ft/d]'
-
-    elif data_type == 'precipitation':
-        precip_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
-        extra = np.median(precip_data[-9:])
-        precip_data_decadal = np.reshape(np.append(precip_data, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = precip_data_decadal
-        
-        if SI:
-            ylabel2 = '$Precipitation\,$ [mm/d]'
-            ylabel4 = '$Precip\,$ [mm/d]'
-        else:           
-            ylabel2 = '$Precipitation\,$ [in/d]'
-            ylabel4 = '$Precip\,$ [in/d]'
-        
-    elif data_type == 'temperature':
-        T_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(T_max[-9:])
-        T_max_decadal = np.reshape(np.append(T_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_2 = T_max_decadal
-        
-        T_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
-        extra = np.median(T_min[-9:])
-        T_min_decadal = np.reshape(np.append(T_min, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = T_min_decadal
-        
-        yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  
-        averaging_window = 9
-        window_raw = np.array([])
-        window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
-        window = window_raw / np.sum(window_raw)  # normalized weights
-        yearly_avg = movingaverage(
-            yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
-            window)[averaging_window:-averaging_window]
-        data_set_rhs_3 = yearly_avg
-        
-        if SI:
-            ylabel2 = '$Temperature\,$ [$^{\circ}\mathrm{C}$]'
-            ylabel4 = '$Temperature\,$ [$^{\circ}\mathrm{C}$]'
-        else:
-            ylabel2 = '$Temperature\,$ [$^{\circ}\mathrm{F}$]'
-            ylabel4 = '$Temperature\,$ [$^{\circ}\mathrm{F}$]'            
-        
-    elif data_type == 'et' or\
-         data_type == 'ag_et' or\
-         data_type == 'for_et':
-        et_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
-        extra = np.median(et_data[-9:])
-        et_data_decadal = np.reshape(np.append(et_data, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = et_data_decadal
-        
-        if SI:
-            ylabel2 = '$Evapotranspiration\,$ [mm/d]'
-            ylabel4 = '$ET\,$ [mm/d]'
-        else:
-            ylabel2 = '$Evapotranspiration\,$ [in/d]'
-            ylabel4 = '$ET\,$ [in/d]'
-
-    elif data_type == 'potet' or\
-         data_type == 'ag_potet' or\
-         data_type == 'for_potet':
-        potet_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
-        extra = np.median(potet_data[-9:])
-        et_data_decadal = np.reshape(np.append(potet_data, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = et_data_decadal
-        
-        if SI:
-            ylabel2 = '$Potential Evapotranspiration\,$ [mm/d]'
-            ylabel4 = '$ET\,$ [mm/d]'
-        else:
-            ylabel2 = '$Potential \,Evapotranspiration\,$ [in/d]'
-            ylabel4 = '$ET\,$ [in/d]'
-
-    elif data_type == 'water_deficit':
-        wd_data_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(wd_data_max[-9:])
-        wd_data_max_decadal = np.reshape(np.append(wd_data_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = wd_data_max_decadal
-        wd_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
-        yearly_max = wd_data
-        
-        if SI:
-            ylabel2 = '$Water \,Deficit\,$ [mm/d]'
-            ylabel4 = '$WD\,$ [mm/d]'
-        else:
-            ylabel2 = '$Water \,Deficit\,$ [in/d]'
-            ylabel4 = '$WD\,$ [in/d]'
-
-#   Calculate values for 3rd strip chart on right-hand-side (yearly avg)
-    averaging_window = 9
-    window_raw = np.array([])
-    window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
-    window = window_raw / np.sum(window_raw)  # normalized weights
-    if data_type != 'swe_pre' and data_type != 'water_deficit':
-        yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        yearly_avg = movingaverage(
-            yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
-            window)[averaging_window:-averaging_window]
-        data_set_rhs_3 = yearly_avg
-    else:  
-        yearly_max = movingaverage(
-            yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
-            window)[averaging_window:-averaging_window]
-        data_set_rhs_3 = yearly_max
       
     ##########################################################
     #   Prepare the figure "canvas"                          #
@@ -572,7 +324,7 @@ def cascade(
         ax3 = fig.add_subplot(gs2[0,2], aspect = 'auto', sharey=ax)
         if flood_Q_available:
             if not SI: flood_Q = flood_Q / cst.cfs_to_m3
-            flood_Q_line = np.ones_like(np.append(Q_max,1)) * flood_Q
+            flood_Q_line = np.ones(90) * flood_Q
             plt.plot(flood_Q_line, np.append(np.array(y),2100), 'r-', lw=1.)
             textstr2 = 'Flood stage'
             props2 = dict(boxstyle='round', facecolor='w', alpha=0.5, lw=0)
@@ -777,7 +529,7 @@ def cascade(
         plt.show()
     else:
         file_graphics = graph_name + '.png'
-        plt.savefig(file_graphics, format="png", dpi=300)
+        plt.savefig(cst.path_write + file_graphics, format="png", dpi=300)
     plt.close(1)
 
 #   End of script for cascade plots
@@ -1142,6 +894,325 @@ def collect_data( \
 
 
 
+def process_data(data_2D, data_yr, num_water_yrs, data_length, \
+        data_type, data_type_list, SI,\
+        start_year, end_year):
+    """
+    Process dat needed for plotting
+    """
+
+    import numpy as np
+    import constants as cst   # constants.py contains constants used here
+
+    ##########################################################
+    # Assemble the data needed on the right-hand-side plots. #
+    # This differs with data_type.                           #
+    ##########################################################
+    data_set_rhs_1 = np.empty([1])
+    data_set_rhs_2 = np.empty([1])
+    data_set_rhs_3 = np.empty([1])
+
+    if data_type == 'stream' or \
+       data_type == 'daminWdup' or \
+       data_type == 'damoutWdup' or \
+       data_type == 'damin' or \
+       data_type == 'damout' or \
+       data_type == 'tot_damin' or \
+       data_type == 'tot_damout' or\
+       data_type == 'tot_damdiff' or\
+       data_type == 'creek_sums':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = Q_max_decadal
+        
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
+                  
+    elif data_type == 'snow':
+        swe_apr1 = data_yr[cst.day_of_year_apr1+(365-cst.day_of_year_oct1):data_length:365]
+        extra = np.median(swe_apr1[-9:])
+        swe_apr1_decadal = np.reshape(np.append(swe_apr1, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = swe_apr1_decadal
+                
+    elif data_type == 'irrigation':
+        irigation_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
+        if SI: irigation_data = irigation_data*86400./1.e6  # convert from m3/s to millions of m3
+        if not SI: irigation_data = irigation_data/1.e3  # convert to thousands of ac-ft
+        extra = np.median(irigation_data[-9:])
+        irigation_data_decadal = np.reshape(np.append(irigation_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = irigation_data_decadal
+        
+    if data_type == 'tot_extract':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = Q_max_decadal
+        
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
+                  
+    if data_type == 'unsat_demand':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = Q_max_decadal
+        
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
+                  
+    elif data_type == 'aridity':
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = Q_max_decadal
+        
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
+                    
+    elif data_type == 'swe_pre':
+        swe_apr1 = data_2D[:,cst.day_of_year_apr1+(365-cst.day_of_year_oct1)-1]
+        extra = np.median(swe_apr1[-9:])
+        swe_apr1_decadal = np.reshape(np.append(swe_apr1, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = swe_apr1_decadal
+        yearly_max = [np.max(data_2D[i,61:150]) for i in range(num_water_yrs)]
+                    
+    elif data_type == 'municipal':
+        municipal_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
+        if SI: municipal_data = municipal_data*86400./1.e6  # convert from m3/s to millions of m3
+        if not SI: municipal_data = municipal_data/1.e3  # convert to thousands of ac-ft
+        extra = np.median(municipal_data[-9:])
+        municipal_data_decadal = np.reshape(np.append(municipal_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = municipal_data_decadal
+        
+    elif data_type == 'water_rights':
+        unusedWR_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
+        if SI: unusedWR_data = unusedWR_data*86400./1.e6  # convert from m3/s to millions of m3
+        if not SI: unusedWR_data = unusedWR_data/1.e3  # convert to thousands of ac-ft
+        extra = np.median(unusedWR_data[-9:])
+        unusedWR_data_decadal = np.reshape(np.append(unusedWR_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = unusedWR_data_decadal
+
+    elif data_type == 'precipitation':
+        precip_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
+        extra = np.median(precip_data[-9:])
+        precip_data_decadal = np.reshape(np.append(precip_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = precip_data_decadal
+                
+    elif data_type == 'temperature':
+        T_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(T_max[-9:])
+        T_max_decadal = np.reshape(np.append(T_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = T_max_decadal
+        
+        T_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(T_min[-9:])
+        T_min_decadal = np.reshape(np.append(T_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = T_min_decadal
+        
+        yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  
+        averaging_window = 9
+        window_raw = np.array([])
+        window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
+        window = window_raw / np.sum(window_raw)  # normalized weights
+        yearly_avg = movingaverage(
+            yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
+            window)[averaging_window:-averaging_window]
+        data_set_rhs_3 = yearly_avg
+        
+    elif data_type == 'et' or\
+         data_type == 'ag_et' or\
+         data_type == 'for_et':
+        et_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
+        extra = np.median(et_data[-9:])
+        et_data_decadal = np.reshape(np.append(et_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = et_data_decadal
+
+    elif data_type == 'potet' or\
+         data_type == 'ag_potet' or\
+         data_type == 'for_potet':
+        potet_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
+        extra = np.median(potet_data[-9:])
+        et_data_decadal = np.reshape(np.append(potet_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = et_data_decadal
+
+    elif data_type == 'water_deficit':
+        wd_data_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(wd_data_max[-9:])
+        wd_data_max_decadal = np.reshape(np.append(wd_data_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = wd_data_max_decadal
+        wd_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
+        yearly_max = wd_data
+
+#   Calculate values for 3rd strip chart on right-hand-side (yearly avg)
+    averaging_window = 9
+    window_raw = np.array([])
+    window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
+    window = window_raw / np.sum(window_raw)  # normalized weights
+    if data_type != 'swe_pre' and data_type != 'water_deficit':
+        yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        yearly_avg = movingaverage(
+            yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
+            window)[averaging_window:-averaging_window]
+        data_set_rhs_3 = yearly_avg
+    else:  
+        yearly_max = movingaverage(
+            yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
+            window)[averaging_window:-averaging_window]
+        data_set_rhs_3 = yearly_max
+    
+    return data_set_rhs_1, data_set_rhs_2, data_set_rhs_3
+    
+
+def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
+        data_type, data_type_list, SI,\
+        start_year, end_year):
+    """
+    Provide labels and titles for plotting
+    """
+    
+    ylabel2 = ''
+    ylabel4 = ''
+
+    if data_type == 'stream' or \
+       data_type == 'daminWdup' or \
+       data_type == 'damoutWdup' or \
+       data_type == 'damin' or \
+       data_type == 'damout' or \
+       data_type == 'tot_damin' or \
+       data_type == 'tot_damout' or\
+       data_type == 'tot_damdiff' or\
+       data_type == 'creek_sums':
+        
+        if SI:
+            ylabel2 = '$Daily \, Q$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Discharge (Q)\,$ [m$^{\t{3}}$/s]'
+        else:
+            ylabel2 = '$Daily \, Q$ [cfs]'
+            ylabel4 = '$Discharge (Q)\,$ [cfs]'
+        if data_type == 'tot_damdiff':
+            if SI:
+                ylabel2 = '$Daily \, \Delta Q$ [m$^{\t{3}}$/s]'
+                ylabel4 = '$\Delta Discharge (\Delta Q)\,$ [m$^{\t{3}}$/s]'
+            else:
+                ylabel2 = '$Daily \, \Delta Q$ [cfs]'
+                ylabel4 = '$Discharge (\Delta Q)\,$ [cfs]'
+                  
+    elif data_type == 'snow':
+        if SI:
+            ylabel2 = '$Snow \,Water \,Equivalent\,$ [mm]'
+            ylabel4 = '$SWE\,$ [mm]'
+        else:
+            ylabel2 = '$Snow \,Water \,Equivalent\,$ [in]'
+            ylabel4 = '$SWE\,$ [in]'
+                
+    elif data_type == 'irrigation':
+        if SI:
+            ylabel2 = '$Irrigation \,Rate\,$ [m$^3$/s]'
+            ylabel4 = '$Irrig \,Rate\,$ [m$^3$/s]'
+        else:
+            ylabel2 = '$Irrigation \,Rate\,$ [ac-ft/d]'
+            ylabel4 = '$Irrig \,Rate\,$ [ac-ft/d]'
+        
+    if data_type == 'tot_extract':
+        if SI:
+            ylabel2 = '$Tot \,Extract \,$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Extract\,$ [m$^{\t{3}}$/s]'
+        else:
+            ylabel2 = '$Tot \,Extract \,$ [cfs]'
+            ylabel4 = '$Extract\,$ [cfs]'
+                  
+    if data_type == 'unsat_demand':
+        if SI:
+            ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Uns\,Dmd\,$ [m$^{\t{3}}$/s]'
+        else:
+            ylabel2 = '$Unsat \,Demand \,$ [cfs]'
+            ylabel4 = '$Uns\,Dmd\,$ [cfs]'
+                  
+    elif data_type == 'aridity':
+        ylabel2 = '$Aridity \,Index$ [-]'
+        ylabel4 = '$Aridity$ [-]'
+                    
+    elif data_type == 'swe_pre':
+        ylabel2 = '$SWE:Precip Ratio$ [-]'
+        ylabel4 = '$SWE:Precip$ [-]'
+                    
+    elif data_type == 'municipal':
+        if SI:
+            ylabel2 = '$Municipal Use\,$ [m$^3$/s]'
+            ylabel4 = '$Mncpl Use\,$ [m$^3$/s]'
+        else:
+            ylabel2 = '$Municipal Use\,$ [ac-ft/d]'
+            ylabel4 = '$Mncpl Use\,$ [ac-ft/d]'
+        
+    elif data_type == 'water_rights':
+        if SI:
+            ylabel2 = '$Unxczd \,Water \,Rights\,$ [m$^3$/s]'
+            ylabel4 = '$Unxczd \,Wtr \,Rt\,$ [m$^3$/s]'
+        else:
+            ylabel2 = '$Unxczd \,Water \,Rights\,$ [ac-ft/d]'
+            ylabel4 = '$Unxczd \,Wtr \,Rt\,$ [ac-ft/d]'
+
+    elif data_type == 'precipitation':
+        if SI:
+            ylabel2 = '$Precipitation\,$ [mm/d]'
+            ylabel4 = '$Precip\,$ [mm/d]'
+        else:           
+            ylabel2 = '$Precipitation\,$ [in/d]'
+            ylabel4 = '$Precip\,$ [in/d]'
+        
+    elif data_type == 'temperature':
+        if SI:
+            ylabel2 = '$Temperature\,$ [$^{\circ}\mathrm{C}$]'
+            ylabel4 = '$Temperature\,$ [$^{\circ}\mathrm{C}$]'
+        else:
+            ylabel2 = '$Temperature\,$ [$^{\circ}\mathrm{F}$]'
+            ylabel4 = '$Temperature\,$ [$^{\circ}\mathrm{F}$]'            
+        
+    elif data_type == 'et' or\
+         data_type == 'ag_et' or\
+         data_type == 'for_et':
+        if SI:
+            ylabel2 = '$Evapotranspiration\,$ [mm/d]'
+            ylabel4 = '$ET\,$ [mm/d]'
+        else:
+            ylabel2 = '$Evapotranspiration\,$ [in/d]'
+            ylabel4 = '$ET\,$ [in/d]'
+
+    elif data_type == 'potet' or\
+         data_type == 'ag_potet' or\
+         data_type == 'for_potet':
+        if SI:
+            ylabel2 = '$Potential Evapotranspiration\,$ [mm/d]'
+            ylabel4 = '$ET\,$ [mm/d]'
+        else:
+            ylabel2 = '$Potential \,Evapotranspiration\,$ [in/d]'
+            ylabel4 = '$ET\,$ [in/d]'
+
+    elif data_type == 'water_deficit':
+        if SI:
+            ylabel2 = '$Water \,Deficit\,$ [mm/d]'
+            ylabel4 = '$WD\,$ [mm/d]'
+        else:
+            ylabel2 = '$Water \,Deficit\,$ [in/d]'
+            ylabel4 = '$WD\,$ [in/d]'
+    
+    return ylabel2, ylabel4
+        
+    
+
 def n_take_k(n,k):
     """Returns (n take k),
     the binomial coefficient.
@@ -1181,9 +1252,7 @@ def month_labels (axys):
        so I found some code on the web and modified it.
     """
     from pylab import plot, ylim, xlim, show, xlabel, ylabel, grid
-#    import matplotlib.pyplot as plt
     import matplotlib.dates as dates
-#    import datetime
     import matplotlib.ticker as ticker
 
     axys.xaxis.set_major_locator(dates.MonthLocator())

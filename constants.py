@@ -25,7 +25,8 @@ def paths():
     Path_book = xlrd.open_workbook('cascade plot parameters.xls')
     Reference_path = tuple(Path_book.sheet_by_index(0).col_values(13))[7]
     Auxilliary_path = tuple(Path_book.sheet_by_index(0).col_values(13))[8]
-    return Reference_path,Auxilliary_path
+    write_path = tuple(Path_book.sheet_by_index(0).col_values(13))[9]
+    return Reference_path, Auxilliary_path, write_path
 
-path_data,path_auxilliary_files = paths()
+path_data, path_auxilliary_files, path_write = paths()
 import metadata
