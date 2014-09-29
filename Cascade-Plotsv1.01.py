@@ -42,7 +42,7 @@ def cascade(
             flood_Q,                    #the level of the flood line
             file_name_list,             #list of file names
             data_type_list,             #list of data_types associated with file names
-            breadth_str,                    #scenarios to gray-shade on top of main scenario
+            breadth,                    #scenarios to gray-shade on top of main scenario
             data_type = 'stream',       #the type of data
             flood_Q_available = False,  #whether the flood level is available
             Display = False,            #whether the graph is to be displayed(True) or saved as a PNG file(False)
@@ -69,283 +69,265 @@ def cascade(
 #    import math
     import matplotlib.gridspec as gridspec
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
-    import metadata as md
 #    from pprint import pprint
 
     np.set_printoptions(precision=3)
-    
-    model_run, short_name = md.define_model_run(file_model_csv)
-    breadth_str = breadth_str.replace(" ","")
-    breadth_str = breadth_str.replace(short_name+",","").replace(","+short_name,"")
-    breadth_str = short_name + ',' + breadth_str
-    breadth = breadth_str.split(",")  # breadth is list of model runs that will be grey-shaded.
-    number_model_runs = len(breadth)
-    file_model_csv = [file_model_csv.replace(short_name, Case) for Case in breadth]
 
     ###############################
     # Read data in from csv files #
     # Modify arrays as needed     #
     ###############################
+    file_model_csv_w_path = cst.path_data + file_model_csv       # Add path to data & stats files
     file_stats_w_path = cst.path_auxilliary_files + file_stats
     
-    file_model_csv_w_path = []
-    data_v = []
-    data_yr = []
-    graph_name = []
-    
-    for i in range(number_model_runs):
-        file_model_csv_w_path.append(cst.path_data + file_model_csv[i])     # Add path to data & stats files
+    data_v = np.array(np.genfromtxt(file_model_csv_w_path, delimiter=',',skip_header=1)) # Read csv file
+    if data_type == 'stream': # (default)
+        time = data_v[:,0]
+        data_yr = data_v[:,1]
+        if not SI: data_yr = data_yr/cst.cfs_to_m3
+        graph_name = file_model_csv[:-4]
+        plot_structure = '4 by 2'
+    elif data_type == 'damin':
+        time = data_v[:,0]
+        data_yr = data_v[:,3]
+        if not SI: data_yr = data_yr/cst.cfs_to_m3
+        graph_name = file_model_csv[:-4] + '_inflow'
+        plot_structure = '4 by 2'
+    elif data_type == 'tot_damin':
+        time = data_v[:,0]
+        data_yr = np.zeros_like(data_v[:,3])
+        file_number = -1
+        for data_type_check in data_type_list:
+            file_number += 1
+            if data_type_check == 'damin' and \
+               're-regulating' not in file_name_list[file_number] and \
+               'Foster' not in file_name_list[file_number] and \
+               'Lookout' not in file_name_list[file_number]:
+                data_tmp = np.array(np.genfromtxt(cst.path_data + 
+                   file_name_list[file_number]
+                   , delimiter=',',skip_header=1)) # Read csv file
+                data_yr = np.add(data_yr, data_tmp[:,3])
+        if not SI: data_yr = data_yr/cst.cfs_to_m3
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
+        graph_name = graph_name + '_tot_reservoir_inflow'
+        plot_structure = '4 by 2'
+    elif data_type == 'tot_damdiff':
+        time = data_v[:,0]
+        data_yr = np.zeros_like(data_v[:,3])
+        file_number = -1
+        for data_type_check in data_type_list:
+            file_number += 1
+            if data_type_check == 'damin' and \
+               're-regulating' not in file_name_list[file_number] and \
+               'Foster' not in file_name_list[file_number] and \
+               'Lookout' not in file_name_list[file_number]:
+                data_tmp = np.array(np.genfromtxt(cst.path_data + 
+                   file_name_list[file_number]
+                   , delimiter=',',skip_header=1)) # Read csv file
+                data_yr = np.add(data_yr, data_tmp[:,3])  #Inflows
+        data_yr_tmp = np.zeros_like(data_v[:,4])
+        file_number = -1
+        for data_type_check in data_type_list:
+            file_number += 1
+            if data_type_check == 'damout' and \
+               're-regulating' not in file_name_list[file_number] and \
+               'Green Peter' not in file_name_list[file_number] and \
+               'Hills' not in file_name_list[file_number]:
+                data_tmp = np.array(np.genfromtxt(cst.path_data + 
+                   file_name_list[file_number]
+                   , delimiter=',',skip_header=1)) # Read csv file
+                data_yr_tmp = np.add(data_yr_tmp, data_tmp[:,4])  #Outflows
+        if not SI: data_yr = data_yr/cst.cfs_to_m3
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
+        graph_name = graph_name + '_tot_res_outflow_minus_inflow'
+        plot_structure = '4 by 2'
+    elif data_type == 'damout':
+        time = data_v[:,0]
+        data_yr = data_v[:,4]
+        if not SI: data_yr = data_yr/cst.cfs_to_m3
+        graph_name = file_model_csv[:-4] + '_outflow'
+        plot_structure = '4 by 2'
+    elif data_type == 'tot_damout':
+        time = data_v[:,0]
+        data_yr = np.zeros_like(data_v[:,4])
+        file_number = -1
+        for data_type_check in data_type_list:
+            file_number += 1
+            if data_type_check == 'damin' and \
+               're-regulating' not in file_name_list[file_number] and \
+               'Green Peter' not in file_name_list[file_number] and \
+               'Hills' not in file_name_list[file_number]:
+                data_tmp = np.array(np.genfromtxt(cst.path_data + 
+                   file_name_list[file_number]
+                   , delimiter=',',skip_header=1)) # Read csv file
+                data_yr = np.add(data_yr, data_tmp[:,4])
+        if not SI: data_yr = data_yr*cst.cfs_to_m3
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
+        graph_name = graph_name + '_total_reservoir_outflow'
+        plot_structure = '4 by 2'
+    elif data_type == 'creek_sums':
+        time = data_v[:,0]
+        data_yr = data_v[:,1]
+        current_number = 0
+        creek_stats = xlrd.open_workbook(file_stats_w_path)
+        creek_stat_data = np.roll(np.array(creek_stats.sheet_by_index(0).col_values(1)[1:]),-cst.day_of_year_oct1)
+        for file_name_check in file_name_list:
+            if 'Luckiamute' in file_name_check\
+            or 'Marys' in file_name_check\
+            or 'Mckenzie_Belknap' in file_name_check\
+            or 'Mohawk' in file_name_check\
+            or 'Molalla_at_Canby' in file_name_check\
+            or 'Pudding_at_Aurora' in file_name_check\
+            or 'Silver_at_Silverton' in file_name_check\
+            or 'Tualatin' in file_name_check\
+            or 'Johnson' in file_name_check:
+                data_tmp = np.array(np.genfromtxt(cst.path_data+file_name_check,delimiter=",",skip_header=1))   #read the file
+                if not SI: data_tmp[:,1] = data_tmp[:,1]/cst.cfs_to_m3
+                data_yr += data_tmp[:,1]
+                stats_name_tmp = xlrd.open_workbook(cst.path_auxilliary_files + stats_list[current_number])
+                stats_tmp = np.roll(np.array(stats_name_tmp.sheet_by_index(0).col_values(1)[1:]),-cst.day_of_year_oct1)
+                stats_tmp = stats_tmp*cst.cfs_to_m3
+                creek_stat_data += stats_tmp
+            current_number += 1
+        mean_Q = creek_stat_data
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
+        graph_name = graph_name + '_total_Creeks_gauged_no_ReservoirInfluence'
+        plot_structure = '4 by 2'
+    elif data_type == 'precipitation' or\
+         data_type == 'snow' or\
+         data_type == 'et' or\
+         data_type == 'for_et' or\
+         data_type == 'ag_et': 
+        time = data_v[:,0]
+        if data_type != 'ag_et': data_yr = data_v[:,1]
+        if data_type == 'ag_et': data_yr = data_v[:,3]
+        if not SI:
+            data_yr = data_yr/cst.in_to_mm
+        graph_name = file_model_csv[:-4] 
+        if data_type == 'precipitation':
+            graph_name = file_model_csv[:-4] + '_precipitation'
+        if data_type == 'for_et':
+            graph_name = file_model_csv[:-4] + '_forest_et'
+        elif data_type == 'ag_et':
+            graph_name = file_model_csv[:-4] + '_ag_et'
+        plot_structure = '3 by 2'
+    elif data_type == 'swe_pre':
+        time = data_v[:,0]
+        data_swe = data_v[:,1]
+        data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+            "Snow_(mm)", "Climate"
+            ), delimiter=',',skip_header=1)) # Read csv file
+        data_pre = data_tmp[:,1]
         
-        data_v.append(np.array(np.genfromtxt(str(file_model_csv_w_path[i]), delimiter=',',skip_header=1))) # Read csv file
-    
-        if data_type == 'stream': # (default)
-            time = data_v[i][:,0]
-            data_yr.append(data_v[i][:,1])
-            if not SI: data_yr.append(data_yr[i]/cst.cfs_to_m3):
-            if i == 0:
-                graph_name = file_model_csv[:-4])
-                plot_structure = '4 by 2'
-        elif data_type == 'damin':
-            time = data_v[:,0]
-            data_yr = data_v[:,3]
-            if not SI: data_yr = data_yr/cst.cfs_to_m3
-            graph_name = file_model_csv[:-4] + '_inflow'
-            plot_structure = '4 by 2'
-        elif data_type == 'tot_damin':
-            time = data_v[:,0]
-            data_yr = np.zeros_like(data_v[:,3])
-            file_number = -1
-            for data_type_check in data_type_list:
-                file_number += 1
-                if data_type_check == 'damin' and \
-                   're-regulating' not in file_name_list[file_number] and \
-                   'Foster' not in file_name_list[file_number] and \
-                   'Lookout' not in file_name_list[file_number]:
-                    data_tmp = np.array(np.genfromtxt(cst.path_data + 
-                       file_name_list[file_number]
-                       , delimiter=',',skip_header=1)) # Read csv file
-                    data_yr = np.add(data_yr, data_tmp[:,3])
-            if not SI: data_yr = data_yr/cst.cfs_to_m3
-            graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
-            graph_name = graph_name + '_tot_reservoir_inflow'
-            plot_structure = '4 by 2'
-        elif data_type == 'tot_damdiff':
-            time = data_v[:,0]
-            data_yr = np.zeros_like(data_v[:,3])
-            file_number = -1
-            for data_type_check in data_type_list:
-                file_number += 1
-                if data_type_check == 'damin' and \
-                   're-regulating' not in file_name_list[file_number] and \
-                   'Foster' not in file_name_list[file_number] and \
-                   'Lookout' not in file_name_list[file_number]:
-                    data_tmp = np.array(np.genfromtxt(cst.path_data + 
-                       file_name_list[file_number]
-                       , delimiter=',',skip_header=1)) # Read csv file
-                    data_yr = np.add(data_yr, data_tmp[:,3])  #Inflows
-            data_yr_tmp = np.zeros_like(data_v[:,4])
-            file_number = -1
-            for data_type_check in data_type_list:
-                file_number += 1
-                if data_type_check == 'damout' and \
-                   're-regulating' not in file_name_list[file_number] and \
-                   'Green Peter' not in file_name_list[file_number] and \
-                   'Hills' not in file_name_list[file_number]:
-                    data_tmp = np.array(np.genfromtxt(cst.path_data + 
-                       file_name_list[file_number]
-                       , delimiter=',',skip_header=1)) # Read csv file
-                    data_yr_tmp = np.add(data_yr_tmp, data_tmp[:,4])  #Outflows
-            if not SI: data_yr = data_yr/cst.cfs_to_m3
-            graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
-            graph_name = graph_name + '_tot_res_outflow_minus_inflow'
-            plot_structure = '4 by 2'
-        elif data_type == 'damout':
-            time = data_v[:,0]
-            data_yr = data_v[:,4]
-            if not SI: data_yr = data_yr/cst.cfs_to_m3
-            graph_name = file_model_csv[:-4] + '_outflow'
-            plot_structure = '4 by 2'
-        elif data_type == 'tot_damout':
-            time = data_v[:,0]
-            data_yr = np.zeros_like(data_v[:,4])
-            file_number = -1
-            for data_type_check in data_type_list:
-                file_number += 1
-                if data_type_check == 'damin' and \
-                   're-regulating' not in file_name_list[file_number] and \
-                   'Green Peter' not in file_name_list[file_number] and \
-                   'Hills' not in file_name_list[file_number]:
-                    data_tmp = np.array(np.genfromtxt(cst.path_data + 
-                       file_name_list[file_number]
-                       , delimiter=',',skip_header=1)) # Read csv file
-                    data_yr = np.add(data_yr, data_tmp[:,4])
-            if not SI: data_yr = data_yr*cst.cfs_to_m3
-            graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
-            graph_name = graph_name + '_total_reservoir_outflow'
-            plot_structure = '4 by 2'
-        elif data_type == 'creek_sums':
-            time = data_v[:,0]
-            data_yr = data_v[:,1]
-            current_number = 0
-            creek_stats = xlrd.open_workbook(file_stats_w_path)
-            creek_stat_data = np.roll(np.array(creek_stats.sheet_by_index(0).col_values(1)[1:]),-cst.day_of_year_oct1)
-            for file_name_check in file_name_list:
-                if 'Luckiamute' in file_name_check\
-                or 'Marys' in file_name_check\
-                or 'Mckenzie_Belknap' in file_name_check\
-                or 'Mohawk' in file_name_check\
-                or 'Molalla_at_Canby' in file_name_check\
-                or 'Pudding_at_Aurora' in file_name_check\
-                or 'Silver_at_Silverton' in file_name_check\
-                or 'Tualatin' in file_name_check\
-                or 'Johnson' in file_name_check:
-                    data_tmp = np.array(np.genfromtxt(cst.path_data+file_name_check,delimiter=",",skip_header=1))   #read the file
-                    if not SI: data_tmp[:,1] = data_tmp[:,1]/cst.cfs_to_m3
-                    data_yr += data_tmp[:,1]
-                    stats_name_tmp = xlrd.open_workbook(cst.path_auxilliary_files + stats_list[current_number])
-                    stats_tmp = np.roll(np.array(stats_name_tmp.sheet_by_index(0).col_values(1)[1:]),-cst.day_of_year_oct1)
-                    stats_tmp = stats_tmp*cst.cfs_to_m3
-                    creek_stat_data += stats_tmp
-                current_number += 1
-            mean_Q = creek_stat_data
-            graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
-            graph_name = graph_name + '_total_Creeks_gauged_no_ReservoirInfluence'
-            plot_structure = '4 by 2'
-        elif data_type == 'precipitation' or\
-             data_type == 'snow' or\
-             data_type == 'et' or\
-             data_type == 'for_et' or\
-             data_type == 'ag_et': 
-            time = data_v[:,0]
-            if data_type != 'ag_et': data_yr = data_v[:,1]
-            if data_type == 'ag_et': data_yr = data_v[:,3]
-            if not SI:
-                data_yr = data_yr/cst.in_to_mm
-            graph_name = file_model_csv[:-4] 
-            if data_type == 'precipitation':
-                graph_name = file_model_csv[:-4] + '_precipitation'
-            if data_type == 'for_et':
-                graph_name = file_model_csv[:-4] + '_forest_et'
-            elif data_type == 'ag_et':
-                graph_name = file_model_csv[:-4] + '_ag_et'
-            plot_structure = '3 by 2'
-        elif data_type == 'swe_pre':
-            time = data_v[:,0]
-            data_swe = data_v[:,1]
-            data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-                "Snow_(mm)", "Climate"
-                ), delimiter=',',skip_header=1)) # Read csv file
-            data_pre = data_tmp[:,1]
-            
-            data_yr = data_swe
-            graph_name = file_model_csv[:-4] + '_SWE-PRE'
-            plot_structure = '3 by 2'
-            data_pre = data_pre[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
-            data_swe = data_swe[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
-        elif data_type == 'water_deficit':
-            time = data_v[:,0]
-            data_pet = data_v[:,2]
-            data_et = data_v[:,1] # Read csv file
-            
-            data_yr = np.add(data_pet, -1.*data_et)
-            graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
-            plot_structure = '3 by 2'
-        elif data_type == 'he_water_deficit':
-            time = data_v[:,0]
-            data_pet = data_v[:,5]
-            data_et = data_v[:,6] # Read csv file
-            
-            data_yr = np.add(data_pet, -1.*data_et)
-            graph_name = file_model_csv[:-4] + '_Water_Deficit_high'
-            plot_structure = '3 by 2'
-            data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
-        elif data_type == 'le_water_deficit':
-            time = data_v[:,0]
-            data_pet = data_v[:,4]
-            data_et = data_v[:,3] # Read csv file
-            
-            data_yr = np.add(data_pet, -1.*data_et)
-            graph_name = file_model_csv[:-4] + '_Water_Deficit_low'
-            plot_structure = '3 by 2'
-            data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
-        elif data_type == 'me_water_deficit':
-            time = data_v[:,0]
-            data_pet = data_v[:,8]
-            data_et = data_v[:,7] # Read csv file
-            
-            data_yr = np.add(data_pet, -1.*data_et)
-            graph_name = file_model_csv[:-4] + '_Water_Deficit_mid'
-            plot_structure = '3 by 2'
-            data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
-        elif data_type == 'irrigation': 
-            time = data_v[:,0]
-            data_yr = np.add(data_v[:,2], data_v[:,3])
-            if not SI:
-                data_yr = data_yr/cst.acftperday_to_m3s
-            graph_name = file_model_csv[:-4] + '_irrigation'
-            plot_structure = '3 by 2'
-        elif data_type == 'municipal': 
-            time = data_v[:,0]
-            data_yr = np.add(data_v[:,4], data_v[:,5])
-            if not SI:
-                data_yr = data_yr/cst.acftperday_to_m3s
-            graph_name = file_model_csv[:-4] + '_municipal'
-            plot_structure = '3 by 2'
-        elif data_type == 'water_rights':
-            time = data_v[:,0]
-            data_yr = np.add(data_v[:,8], data_v[:,9])
-            if not SI:
-                data_yr = data_yr/cst.acftperday_to_m3s
-            graph_name = file_model_csv[:-4] + '_unexercized_water_rights'
-            plot_structure = '3 by 2'
-        elif data_type == 'tot_extract':
-            time = data_v[:,0]
-            data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
-                              np.add(data_v[:,4],data_v[:,5])   )
-            if not SI:
-                data_yr = data_yr/cst.acftperday_to_m3s
-            graph_name = file_model_csv[:-4] + '_total water use by people'
-            plot_structure = '4 by 2'
-        elif data_type == 'unsat_demand':
-            time = data_v[:,0]
-            data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
-                              np.add(data_v[:,16],data_v[:,17])   )
-            if not SI:
-                data_yr = data_yr/cst.acftperday_to_m3s
-            graph_name = file_model_csv[:-4] + '_total unsatisfied demand'
-            plot_structure = '4 by 2'
-        elif data_type == 'aridity':
-            time = data_v[:,0]
-            data_pet = data_v[:,2]
-            data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-                "ET_by_Elevation_(mm)", "Daily_WaterMaster_Metrics"
-                ), delimiter=',',skip_header=1)) # Read csv file
-            data_irrig = np.add(data_v[:,2], data_v[:,3])
-            
-            data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-                "ET_by_Elevation_(mm)", "Climate"
-                ), delimiter=',',skip_header=1)) # Read csv file
-            data_precip = data_tmp[:,1]
-            
-            data_yr = data_pet/np.add(data_irrig, data_precip)
-            graph_name = file_model_csv[:-4] + '_Aridity_Index'
-            plot_structure = '4 by 2'
-        elif data_type == 'temperature':
-            time = data_v[:,0]
-            data_yr = data_v[:,2]
-            if not SI: data_yr = (data_yr/cst.F_to_C) + 32.
-            graph_name = file_model_csv[:-4] + '_temperature'
-            plot_structure = '4 by 2'
-        elif data_type == 'potet' or\
-             data_type == 'for_potet' or\
-             data_type == 'ag_potet':
-            time = data_v[:,0]
-            if data_type != 'ag_potet': data_yr = data_v[:,2]
-            if data_type == 'ag_potet': data_yr = data_v[:,4]
-            if not SI: data_yr = data_yr/cst.in_to_mm
-            graph_name = file_model_csv[:-4] + '_pet'
-            if data_type != 'potet': graph_name = file_model_csv[:-4] + data_type
-            plot_structure = '3 by 2'
+        data_yr = data_swe
+        graph_name = file_model_csv[:-4] + '_SWE-PRE'
+        plot_structure = '3 by 2'
+        data_pre = data_pre[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
+        data_swe = data_swe[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
+    elif data_type == 'water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,2]
+        data_et = data_v[:,1] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_basinwide'
+        plot_structure = '3 by 2'
+    elif data_type == 'he_water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,5]
+        data_et = data_v[:,6] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_high'
+        plot_structure = '3 by 2'
+        data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
+    elif data_type == 'le_water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,4]
+        data_et = data_v[:,3] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_low'
+        plot_structure = '3 by 2'
+        data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
+    elif data_type == 'me_water_deficit':
+        time = data_v[:,0]
+        data_pet = data_v[:,8]
+        data_et = data_v[:,7] # Read csv file
+        
+        data_yr = np.add(data_pet, -1.*data_et)
+        graph_name = file_model_csv[:-4] + '_Water_Deficit_mid'
+        plot_structure = '3 by 2'
+        data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
+    elif data_type == 'irrigation': 
+        time = data_v[:,0]
+        data_yr = np.add(data_v[:,2], data_v[:,3])
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_irrigation'
+        plot_structure = '3 by 2'
+    elif data_type == 'municipal': 
+        time = data_v[:,0]
+        data_yr = np.add(data_v[:,4], data_v[:,5])
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_municipal'
+        plot_structure = '3 by 2'
+    elif data_type == 'water_rights':
+        time = data_v[:,0]
+        data_yr = np.add(data_v[:,8], data_v[:,9])
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_unexercized_water_rights'
+        plot_structure = '3 by 2'
+    elif data_type == 'tot_extract':
+        time = data_v[:,0]
+        data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
+                          np.add(data_v[:,4],data_v[:,5])   )
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_total water use by people'
+        plot_structure = '4 by 2'
+    elif data_type == 'unsat_demand':
+        time = data_v[:,0]
+        data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
+                          np.add(data_v[:,16],data_v[:,17])   )
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_total unsatisfied demand'
+        plot_structure = '4 by 2'
+    elif data_type == 'aridity':
+        time = data_v[:,0]
+        data_pet = data_v[:,2]
+        data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+            "ET_by_Elevation_(mm)", "Daily_WaterMaster_Metrics"
+            ), delimiter=',',skip_header=1)) # Read csv file
+        data_irrig = np.add(data_v[:,2], data_v[:,3])
+        
+        data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+            "ET_by_Elevation_(mm)", "Climate"
+            ), delimiter=',',skip_header=1)) # Read csv file
+        data_precip = data_tmp[:,1]
+        
+        data_yr = data_pet/np.add(data_irrig, data_precip)
+        graph_name = file_model_csv[:-4] + '_Aridity_Index'
+        plot_structure = '4 by 2'
+    elif data_type == 'temperature':
+        time = data_v[:,0]
+        data_yr = data_v[:,2]
+        if not SI: data_yr = (data_yr/cst.F_to_C) + 32.
+        graph_name = file_model_csv[:-4] + '_temperature'
+        plot_structure = '4 by 2'
+    elif data_type == 'potet' or\
+         data_type == 'for_potet' or\
+         data_type == 'ag_potet':
+        time = data_v[:,0]
+        if data_type != 'ag_potet': data_yr = data_v[:,2]
+        if data_type == 'ag_potet': data_yr = data_v[:,4]
+        if not SI: data_yr = data_yr/cst.in_to_mm
+        graph_name = file_model_csv[:-4] + '_pet'
+        if data_type != 'potet': graph_name = file_model_csv[:-4] + data_type
+        plot_structure = '3 by 2'
 
   # Do Error checking if Willamette at Portland
     if "Willamette_at_Portland" in file_model_csv:
@@ -1303,7 +1285,7 @@ for plot_number in range(total_number_of_plots):
                 flood_Q[plot_number],
                 file_name_list,
                 list(data_type_v),
-                breadth_str = breadth_v[plot_number],
+                breadth = breadth_v[plot_number],
                 Display = Display_v[plot_number],
                 data_type = data_type_v[plot_number],
                 flood_Q_available = flood_Q_available_v[plot_number],
