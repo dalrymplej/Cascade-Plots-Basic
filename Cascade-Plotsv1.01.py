@@ -42,7 +42,7 @@ def cascade(
             flood_Q,                    #the level of the flood line
             file_name_list,             #list of file names
             data_type_list,             #list of data_types associated with file names
-            breadth,                    #scenarios to gray-shade on top of main scenario
+            breadth_str,                    #scenarios to gray-shade on top of main scenario
             data_type = 'stream',       #the type of data
             flood_Q_available = False,  #whether the flood level is available
             Display = False,            #whether the graph is to be displayed(True) or saved as a PNG file(False)
@@ -63,8 +63,17 @@ def cascade(
     import constants as cst   # constants.py contains constants used here
     import matplotlib.gridspec as gridspec
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
+    import metadata as md
 
     np.set_printoptions(precision=3)
+
+    model_run, short_name = md.define_model_run(file_model_csv)
+    breadth_str = breadth_str.replace(" ","")
+    breadth_str = breadth_str.replace(short_name+",","").replace(","+short_name,"")
+    breadth_str = short_name + ',' + breadth_str
+    breadth = breadth_str.split(",")  # breadth is list of model runs that will be grey-shaded.
+    number_model_runs = len(breadth)
+#    file_model_csv = [file_model_csv.replace(short_name, Case) for Case in breadth]
 
     ###############################
     # Read data in from csv files #
@@ -1278,7 +1287,7 @@ for plot_number in range(total_number_of_plots):
                 flood_Q[plot_number],
                 file_name_list,
                 list(data_type_v),
-                breadth = breadth_v[plot_number],
+                breadth_str = breadth_v[plot_number],
                 Display = Display_v[plot_number],
                 data_type = data_type_v[plot_number],
                 flood_Q_available = flood_Q_available_v[plot_number],
