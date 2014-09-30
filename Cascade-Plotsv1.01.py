@@ -85,7 +85,7 @@ def cascade(
     
 #       Collect data for plotting from csv file:
         data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
-            start_year, end_year, graph_name, plot_structure, error_check, \
+            start_year, end_year, graph_name_tmp, plot_structure, error_check, \
             mass_balance_err_str, mean_Q \
             \
             = collect_data(
@@ -94,6 +94,10 @@ def cascade(
                 stats_list, stats_available, SI \
                 )
         
+        if inum == 0:
+            graph_name = graph_name_tmp
+            
+            
         if 'deficit' in data_type:
             data_type = 'water_deficit'
         
@@ -183,7 +187,7 @@ def cascade(
     ax.set_ylabel('$Water \, Year$', fontsize=14)
     ticks=np.arange(2020,2100,10)
     plt.yticks(ticks, fontsize=14)
-    plt.title(cst.metadata.define_model_run(file_model_csv)[0],fontsize=12)
+    plt.title(cst.metadata.define_model_run(file_model_csv_list[0])[0],fontsize=12)
     plt.suptitle(title, fontsize = 18)
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.85, lw=0)
     divider = make_axes_locatable(ax)
@@ -527,7 +531,7 @@ def cascade(
 
     textstr = 'Willamette Water 2100\n'+cst.metadata.model_run + \
               '\n\n' + ' Graph generated on ' + str(datetime.date.today()) +\
-              '\n\n' + ' File: ' + file_model_csv +\
+              '\n\n' + ' File: ' + file_model_csv_list[0] +\
               '\n\n' + ' Data generated on ' + timetool.ctime(os.path.getctime(file_model_csv_w_path))
     if error_check: textstr = textstr + '\n\n' + 'Mass balance error = ' + mass_balance_err_str
 
@@ -549,6 +553,16 @@ def cascade(
 
 #   End of script for cascade plots
 
+
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
 ########################################################################################
 ########################################################################################
 ########################################################################################
