@@ -436,6 +436,9 @@ def cascade(
     elif data_type == 'precipitation':
 
         ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        data_set_rhs_3_min = data_set_rhs_3_min*365.
+        data_set_rhs_3_max = data_set_rhs_3_max*365.
+
         if SI:
             plt.xlabel('$Precip$ [mm]', fontsize = 14)
         else:
@@ -444,6 +447,8 @@ def cascade(
     elif data_type == 'irrigation':
 
         ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        data_set_rhs_3_min = data_set_rhs_3_min*365.
+        data_set_rhs_3_max = data_set_rhs_3_max*365.
         if SI:
             plt.xlabel('$Tot \, Ann \, Irrig\,$\n[million m$^3$]', fontsize = 14)
         else:
@@ -476,6 +481,8 @@ def cascade(
     elif data_type == 'municipal':
 
         ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        data_set_rhs_3_min = data_set_rhs_3_min*365.
+        data_set_rhs_3_max = data_set_rhs_3_max*365.
         if SI:
             plt.xlabel('$Tot \, Ann \, Mncpl\,$\n[million m$^3$]', fontsize = 14)
         else:
@@ -484,6 +491,8 @@ def cascade(
     elif data_type == 'water_rights':
 
         ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        data_set_rhs_3_min = data_set_rhs_3_min*365.
+        data_set_rhs_3_max = data_set_rhs_3_max*365.
         if SI:
             plt.xlabel('$Tot \, Unxczd \, Wtr\, Rt\,$\n[million m$^3$]', fontsize = 14)
         else:
@@ -494,6 +503,8 @@ def cascade(
          data_type == 'ag_et':
 
         ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        data_set_rhs_3_min = data_set_rhs_3_min*365.
+        data_set_rhs_3_max = data_set_rhs_3_max*365.
         if SI:
             plt.xlabel('$Tot \, ET$ [mm]', fontsize = 14)
         else:
@@ -504,6 +515,8 @@ def cascade(
          data_type == 'ag_potet':
 
         ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        data_set_rhs_3_min = data_set_rhs_3_min*365.
+        data_set_rhs_3_max = data_set_rhs_3_max*365.
         if SI:
             plt.xlabel('$Tot \, PET$ [mm]', fontsize = 14)
         else:
