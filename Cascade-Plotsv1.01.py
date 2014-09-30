@@ -123,7 +123,7 @@ def cascade(
         else:
             data_set_rhs_3_min = np.amin(np.column_stack((data_set_rhs_3,
                                                          data_set_rhs_3_min)),1)
-            data_set_rhs_3_max = np.amin(np.column_stack((data_set_rhs_3,
+            data_set_rhs_3_max = np.amax(np.column_stack((data_set_rhs_3,
                                                          data_set_rhs_3_max)),1)
             data_bottom_min = np.amin(np.column_stack((data_early,
                                                       data_mid,
