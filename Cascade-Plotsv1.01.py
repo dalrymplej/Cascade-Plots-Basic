@@ -82,6 +82,7 @@ def cascade(
     for Case in breadth:
         file_model_csv = file_model_csv_list[inum]
         file_model_csv_w_path = file_model_csv_w_path_list[inum]
+        print file_model_csv_w_path_list[inum]
     
 #       Collect data for plotting from csv file:
         data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
@@ -90,10 +91,10 @@ def cascade(
             \
             = collect_data(
                 file_model_csv, file_model_csv_w_path, file_stats_w_path, \
-                data_type, data_type_list, \
+                data_type, data_type_list, file_name_list, \
                 stats_list, stats_available, SI \
                 )
-        
+        print data_2D[7,7]
         if inum == 0:
             graph_name = graph_name_tmp
             
@@ -107,6 +108,7 @@ def cascade(
                 data_type, data_type_list, SI,\
                 start_year, end_year
                 )
+        print data_set_rhs_3[0]
 
         data_early, data_mid, data_late, window, averaging_window \
             = process_bottom_strip(
@@ -115,6 +117,7 @@ def cascade(
                 start_year, end_year
                 )
                 
+        print data_early[0]
         if inum == 0:
             data_set_rhs_3_min = data_set_rhs_3
             data_set_rhs_3_max = data_set_rhs_3
@@ -124,6 +127,7 @@ def cascade(
             data_bottom_max = np.amax(np.column_stack((data_early,
                                                       data_mid,
                                                       data_late)),1)
+             
         else:
             data_set_rhs_3_min = np.amin(np.column_stack((data_set_rhs_3,
                                                          data_set_rhs_3_min)),1)
@@ -137,6 +141,7 @@ def cascade(
                                                       data_mid,
                                                       data_late,
                                                       data_bottom_max)),1)
+            print data_set_rhs_3_min[0], data_set_rhs_3_max[0]
         inum += 1
             
     ylabel2, ylabel4 \
@@ -529,7 +534,7 @@ def cascade(
             plt.xlabel('$Tot \, WD$ [mm]', fontsize = 14)
         else:
             plt.xlabel('$Tot \, WD$ [in]', fontsize = 14)
-
+    
     ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min, data_set_rhs_3_max, 
                       color="gray", alpha = 0.3)
     xloc = plt.MaxNLocator(max_xticks)
@@ -584,7 +589,7 @@ def cascade(
 
 def collect_data( \
     file_model_csv, file_model_csv_w_path, file_stats_w_path, \
-    data_type, data_type_list, \
+    data_type, data_type_list, file_name_list, \
     stats_list, stats_available, SI):
 
     """
@@ -683,6 +688,8 @@ def collect_data( \
                    file_name_list[file_number]
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,4])
+        print 'data_yr = ', data_yr[1000]
+        print 'files', file_number, file_name_list[file_number]
         if not SI: data_yr = data_yr*cst.cfs_to_m3
         graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_total_reservoir_outflow'
@@ -929,7 +936,7 @@ def collect_data( \
         data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
     data_2D_clipped = np.empty_like(data_2D)
     data_2D_clipped = np.clip(data_2D, plot_lower_bound, plot_upper_bound)
-
+    
     return data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs,\
        start_year, end_year, graph_name, plot_structure, error_check, \
        mass_balance_err_str, mean_Q
