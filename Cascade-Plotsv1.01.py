@@ -35,6 +35,7 @@
 ########################################################################################
 
 def cascade(
+            AltScenario,
             file_model_csv,             #the name of the reference file
             file_stats,                 #the name of the stats file (if available)
             stats_list,                 #a list of the stats files
@@ -63,7 +64,7 @@ def cascade(
     import matplotlib.gridspec as gridspec
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
     import metadata as md
-
+    
     np.set_printoptions(precision=3)    
 
     model_run, short_name = md.define_model_run(file_model_csv)
@@ -84,7 +85,9 @@ def cascade(
         file_model_csv_w_path = file_model_csv_w_path_list[inum]
         file_breadth_list = []
         for file_name in file_name_list:
-            file_breadth_list.append(file_name.replace(breadth[0],Case))
+#            file_breadth_list.append(file_name.replace(breadth[0],Case))
+            file_breadth_list.append(file_name.replace(AltScenario,Case))
+            print AltScenario
     
 #       Collect data for plotting from csv file:
         data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
@@ -1459,22 +1462,26 @@ total_number_of_plots = len(file_model_csv)
 
 ## DO NOT DELETE THE NEXT 6 LINES:
 ## If you want to plot all scenarios, uncomment this line:
-#AltScenarioList = list(cst.metadata.AltScenarios[0:6])
+AltScenarioList = list(cst.metadata.AltScenarios[0:6])
 
 ## If you only want to plot the scenario indicated in the master file, 
 ##   uncomment this line:
-AltScenarioList = [str(file_model_csv[0]).split("_")[-2]]  #List of length 1
+#AltScenarioList = [str(file_model_csv[0]).split("_")[-2]]  #List of length 1
 ## DO NOT DELETE THE TEXT ABOVE HERE ^^^^^
 
+isim = -1
 # Make the plots.
 for AltScenario in AltScenarioList:
     file_list_ToBeUsed = []
+    isim += 1
     for file in file_name_list: 
         file_list_ToBeUsed.append(file.replace('Ref', AltScenario))
     for plot_number in range(total_number_of_plots):
         if ToBePlotted[plot_number]:
             file_name_ToBeUsed = file_list_ToBeUsed[plot_number]
+            print "file name TBU = ", file_name_ToBeUsed
             cascade(
+                AltScenario,
                 file_name_ToBeUsed,
                 file_stats[plot_number],
                 list(file_stats),
