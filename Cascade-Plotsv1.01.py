@@ -82,7 +82,9 @@ def cascade(
     for Case in breadth:
         file_model_csv = file_model_csv_list[inum]
         file_model_csv_w_path = file_model_csv_w_path_list[inum]
-        print file_model_csv_w_path_list[inum]
+        file_breadth_list = []
+        for file_name in file_name_list:
+            file_breadth_list.append(file_name.replace(breadth[0],Case))
     
 #       Collect data for plotting from csv file:
         data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
@@ -91,10 +93,9 @@ def cascade(
             \
             = collect_data(
                 file_model_csv, file_model_csv_w_path, file_stats_w_path, \
-                data_type, data_type_list, file_name_list, \
+                data_type, data_type_list, file_breadth_list, \
                 stats_list, stats_available, SI \
                 )
-        print data_2D[7,7]
         if inum == 0:
             graph_name = graph_name_tmp
             
@@ -108,7 +109,6 @@ def cascade(
                 data_type, data_type_list, SI,\
                 start_year, end_year
                 )
-        print data_set_rhs_3[0]
 
         data_early, data_mid, data_late, window, averaging_window \
             = process_bottom_strip(
@@ -117,7 +117,6 @@ def cascade(
                 start_year, end_year
                 )
                 
-        print data_early[0]
         if inum == 0:
             data_set_rhs_3_min = data_set_rhs_3
             data_set_rhs_3_max = data_set_rhs_3
@@ -141,7 +140,6 @@ def cascade(
                                                       data_mid,
                                                       data_late,
                                                       data_bottom_max)),1)
-            print data_set_rhs_3_min[0], data_set_rhs_3_max[0]
         inum += 1
             
     ylabel2, ylabel4 \
@@ -599,7 +597,7 @@ def collect_data( \
     import numpy as np
     import xlrd
     import constants as cst   # constants.py contains constants used here
-
+    
     ###############################
     # Read data in from csv files #
     # Modify arrays as needed     #
@@ -688,8 +686,6 @@ def collect_data( \
                    file_name_list[file_number]
                    , delimiter=',',skip_header=1)) # Read csv file
                 data_yr = np.add(data_yr, data_tmp[:,4])
-        print 'data_yr = ', data_yr[1000]
-        print 'files', file_number, file_name_list[file_number]
         if not SI: data_yr = data_yr*cst.cfs_to_m3
         graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_total_reservoir_outflow'
@@ -1471,10 +1467,13 @@ AltScenarioList = [str(file_model_csv[0]).split("_")[-2]]  #List of length 1
 ## DO NOT DELETE THE TEXT ABOVE HERE ^^^^^
 
 # Make the plots.
-for plot_number in range(total_number_of_plots):
-    if ToBePlotted[plot_number]:
-        for AltScenario in AltScenarioList:
-            file_name_ToBeUsed = file_name_list[plot_number].replace('Ref', AltScenario)
+for AltScenario in AltScenarioList:
+    file_list_ToBeUsed = []
+    for file in file_name_list: 
+        file_list_ToBeUsed.append(file.replace('Ref', AltScenario))
+    for plot_number in range(total_number_of_plots):
+        if ToBePlotted[plot_number]:
+            file_name_ToBeUsed = file_list_ToBeUsed[plot_number]
             cascade(
                 file_name_ToBeUsed,
                 file_stats[plot_number],
