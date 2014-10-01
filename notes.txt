@@ -4,7 +4,8 @@ Open a git shell, cd to the repo directory, then type
 git checkout master
 git pull
 git checkout branchname
-git merge master
+git merge branchname
+git push
 
 
 Example directory:
