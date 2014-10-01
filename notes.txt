@@ -5,3 +5,7 @@ git checkout master
 git pull
 git checkout branchname
 git merge master
+
+
+Example directory:
+C:\Users\haggertr\Desktop\Roy\Research\WW2100\Research\results2\Cascade_plots\Cascade-Plots-Basic
