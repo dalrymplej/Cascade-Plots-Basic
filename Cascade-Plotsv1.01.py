@@ -67,12 +67,13 @@ def cascade(
     
     np.set_printoptions(precision=3)    
 
+    # Generate list of model runs to be gray-shaded, and place comparitor into
+    # first slot in that list.
     model_run, short_name = md.define_model_run(file_model_csv)
     breadth_str = breadth_str.replace(" ","")
     breadth_str = breadth_str.replace(short_name+",","").replace(","+short_name,"")
     breadth_str = short_name + ',' + breadth_str
     breadth = breadth_str.split(",")  # breadth is list of model runs that will be grey-shaded.
-#    number_model_runs = len(breadth)
     
     file_model_csv_list = [file_model_csv.replace(short_name, Case) for Case in breadth]
     file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(short_name, Case) for Case in breadth]
@@ -85,9 +86,7 @@ def cascade(
         file_model_csv_w_path = file_model_csv_w_path_list[inum]
         file_breadth_list = []
         for file_name in file_name_list:
-#            file_breadth_list.append(file_name.replace(breadth[0],Case))
             file_breadth_list.append(file_name.replace(AltScenario,Case))
-            print AltScenario
     
 #       Collect data for plotting from csv file:
         data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs, \
@@ -99,10 +98,9 @@ def cascade(
                 data_type, data_type_list, file_breadth_list, \
                 stats_list, stats_available, SI \
                 )
+            
         if inum == 0:
             graph_name = graph_name_tmp
-            
-            
         if 'deficit' in data_type:
             data_type = 'water_deficit'
         
@@ -120,7 +118,7 @@ def cascade(
                 start_year, end_year
                 )
                 
-        if inum == 0:
+        if inum == 0:    # if first data set, then keep it as comparitor
             data_set_rhs_3_min = data_set_rhs_3
             data_set_rhs_3_max = data_set_rhs_3
             data_bottom_min = np.amin(np.column_stack((data_early,
@@ -129,6 +127,14 @@ def cascade(
             data_bottom_max = np.amax(np.column_stack((data_early,
                                                       data_mid,
                                                       data_late)),1)
+
+            # Save comparitor data in variables beginning with s
+            sdata_set_rhs_1, sdata_set_rhs_2, sdata_set_rhs_3, \
+                sdata_early, sdata_mid, sdata_late, \
+                sdata_2D, sdata_2D_clipped \
+            = data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
+                data_early, data_mid, data_late, \
+                data_2D, data_2D_clipped, 
              
         else:
             data_set_rhs_3_min = np.amin(np.column_stack((data_set_rhs_3,
@@ -144,7 +150,14 @@ def cascade(
                                                       data_late,
                                                       data_bottom_max)),1)
         inum += 1
-            
+
+    data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
+        data_early, data_mid, data_late, \
+        data_2D, data_2D_clipped \
+    = sdata_set_rhs_1, sdata_set_rhs_2, sdata_set_rhs_3, \
+        sdata_early, sdata_mid, sdata_late, \
+        sdata_2D, sdata_2D_clipped, 
+          
     ylabel2, ylabel4 \
         = get_labels(
             data_2D, data_yr, num_water_yrs, data_length, \
@@ -1462,24 +1475,21 @@ total_number_of_plots = len(file_model_csv)
 
 ## DO NOT DELETE THE NEXT 6 LINES:
 ## If you want to plot all scenarios, uncomment this line:
-AltScenarioList = list(cst.metadata.AltScenarios[0:6])
+#AltScenarioList = list(cst.metadata.AltScenarios[0:6])
 
 ## If you only want to plot the scenario indicated in the master file, 
 ##   uncomment this line:
-#AltScenarioList = [str(file_model_csv[0]).split("_")[-2]]  #List of length 1
+AltScenarioList = [str(file_model_csv[0]).split("_")[-2]]  #List of length 1
 ## DO NOT DELETE THE TEXT ABOVE HERE ^^^^^
 
-isim = -1
 # Make the plots.
 for AltScenario in AltScenarioList:
     file_list_ToBeUsed = []
-    isim += 1
     for file in file_name_list: 
         file_list_ToBeUsed.append(file.replace('Ref', AltScenario))
     for plot_number in range(total_number_of_plots):
         if ToBePlotted[plot_number]:
             file_name_ToBeUsed = file_list_ToBeUsed[plot_number]
-            print "file name TBU = ", file_name_ToBeUsed
             cascade(
                 AltScenario,
                 file_name_ToBeUsed,
