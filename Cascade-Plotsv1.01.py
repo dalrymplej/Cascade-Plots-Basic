@@ -65,24 +65,47 @@ def cascade(
     import matplotlib.gridspec as gridspec
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
     import metadata as md
+    import collections
     
-    np.set_printoptions(precision=3)    
-
+    np.set_printoptions(precision=3) 
+    
+    # This checks to see if there is anything in the second breadth column:
+    if isinstance(breadth_str_2nd, unicode):
+         request_2nd = True
+    else:
+        request_2nd = False
+        
     # Generate list of model runs to be gray-shaded, and place comparitor into
     # first slot in that list.
-    model_run, short_name = md.define_model_run(file_model_csv)
+    model_run, primary = md.define_model_run(file_model_csv)  #primary is comparitor
     breadth_str = breadth_str.replace(" ","")
-    breadth_str = breadth_str.replace(short_name+",","").replace(","+short_name,"")
-    breadth_str = short_name + ',' + breadth_str
+    breadth_str = breadth_str.replace(primary+",","").replace(","+primary,"") #remove primary
+    breadth_str = primary + ',' + breadth_str #place primary in first slot
     breadth = breadth_str.split(",")  # breadth is list of model runs that will be grey-shaded.
+    num_breadth = len(breadth)
+    breadth_collection = collections.Counter(breadth)
+
+    if request_2nd:
+        breadth_str_2nd = breadth_str_2nd.replace(" ","")
+        breadth_str_2nd = breadth_str_2nd.replace(primary+",","").replace(","+primary,"") #remove primary
+        breadth_2nd = breadth_str_2nd.split(",")  # breadth is list of model runs that will be grey-shaded.
+        breadth_2nd_collection = collections.Counter(breadth_2nd)
+        breadth_all_collection = (breadth_collection - breadth_2nd_collection) +\
+            breadth_2nd_collection
+        breadth_diff_collection = breadth_2nd_collection - breadth_collection
+        for thing in breadth_all_collection:
+            print thing
+    assert False
+        
+
     
-    file_model_csv_list = [file_model_csv.replace(short_name, Case) for Case in breadth]
-    file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(short_name, Case) for Case in breadth]
+    file_model_csv_list = [file_model_csv.replace(primary, Case) for Case in breadth_all_collection]
+    file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(primary, Case) for Case in breadth_all_collection]
     
     file_stats_w_path = cst.path_auxilliary_files + file_stats
     
     inum = 0
-    for Case in breadth:
+    for Case in breadth_all_collection:
         file_model_csv = file_model_csv_list[inum]
         file_model_csv_w_path = file_model_csv_w_path_list[inum]
         file_breadth_list = []
@@ -100,7 +123,9 @@ def cascade(
                 stats_list, stats_available, SI \
                 )
             
-        if inum == 0:
+        if Case == primary: 
+            primary_inum = inum
+#        if inum == 0:
             graph_name = graph_name_tmp
         if 'deficit' in data_type:
             data_type = 'water_deficit'
@@ -1468,8 +1493,8 @@ flood_Q_available_v = cascade_plot_params.sheet_by_index(0).col_values(6)[1:]   
 data_type_v = cascade_plot_params.sheet_by_index(0).col_values(7)[1:]           # What type of data is this? Stream, Dam, etc.
 stats_available_v = cascade_plot_params.sheet_by_index(0).col_values(8)[1:]     # The stats file is available (True/False)
 SI_v = cascade_plot_params.sheet_by_index(0).col_values(9)[1:]                  # Metric or standard units
-breadth_v = cascade_plot_params.sheet_by_index(0).col_values(10)[1:]             # Breadth of simulations to create gray-scale
-breadth_2nd_v = cascade_plot_params.sheet_by_index(0).col_values(11)[1:]             # Breadth of simulations to create gray-scale
+breadth_v = cascade_plot_params.sheet_by_index(0).col_values(10)[1:]            # Breadth of simulations to create gray-scale
+breadth_2nd_v = cascade_plot_params.sheet_by_index(0).col_values(11)[1:]        # Breadth of simulations to create gray-scale
 
 flood_Q[:] = [element*cst.cfs_to_m3 for element in flood_Q]   # convert flood_Q from cfs to m3/s
 
@@ -1502,7 +1527,7 @@ for AltScenario in AltScenarioList:
                 file_name_list,
                 list(data_type_v),
                 breadth_str = breadth_v[plot_number],
-                breadth_str_2nd = breadth_2nd_v[plot_number]
+                breadth_str_2nd = breadth_2nd_v[plot_number],
                 Display = Display_v[plot_number],
                 data_type = data_type_v[plot_number],
                 flood_Q_available = flood_Q_available_v[plot_number],
