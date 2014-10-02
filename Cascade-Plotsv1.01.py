@@ -43,7 +43,8 @@ def cascade(
             flood_Q,                    #the level of the flood line
             file_name_list,             #list of file names
             data_type_list,             #list of data_types associated with file names
-            breadth_str,                    #scenarios to gray-shade on top of main scenario
+            breadth_str,                #scenarios to gray-shade on top of main scenario
+            breadth_str_2nd,            #second set of scenarios, to be red-shaaded
             data_type = 'stream',       #the type of data
             flood_Q_available = False,  #whether the flood level is available
             Display = False,            #whether the graph is to be displayed(True) or saved as a PNG file(False)
@@ -1468,6 +1469,7 @@ data_type_v = cascade_plot_params.sheet_by_index(0).col_values(7)[1:]           
 stats_available_v = cascade_plot_params.sheet_by_index(0).col_values(8)[1:]     # The stats file is available (True/False)
 SI_v = cascade_plot_params.sheet_by_index(0).col_values(9)[1:]                  # Metric or standard units
 breadth_v = cascade_plot_params.sheet_by_index(0).col_values(10)[1:]             # Breadth of simulations to create gray-scale
+breadth_2nd_v = cascade_plot_params.sheet_by_index(0).col_values(11)[1:]             # Breadth of simulations to create gray-scale
 
 flood_Q[:] = [element*cst.cfs_to_m3 for element in flood_Q]   # convert flood_Q from cfs to m3/s
 
@@ -1500,6 +1502,7 @@ for AltScenario in AltScenarioList:
                 file_name_list,
                 list(data_type_v),
                 breadth_str = breadth_v[plot_number],
+                breadth_str_2nd = breadth_2nd_v[plot_number]
                 Display = Display_v[plot_number],
                 data_type = data_type_v[plot_number],
                 flood_Q_available = flood_Q_available_v[plot_number],
