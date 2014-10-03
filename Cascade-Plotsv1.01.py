@@ -152,16 +152,18 @@ def cascade(
                  data_set_rhs_3_red
             except NameError:
                 data_set_rhs_3_red = np.expand_dims(data_set_rhs_3,axis=1)
-                data_bottom_red = np.column_stack((data_early,
-                                                      data_mid,
-                                                      data_late))
+                data_bottom_red_early = np.expand_dims(data_early,axis=1)
+                data_bottom_red_mid = np.expand_dims(data_mid,axis=1)
+                data_bottom_red_late = np.expand_dims(data_late,axis=1)
             else:
                 data_set_rhs_3_red = np.concatenate((data_set_rhs_3_red, \
                                     np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
-                data_bottom_red = np.concatenate((data_bottom_red, 
-                                                  np.column_stack((data_early,
-                                                      data_mid,
-                                                      data_late))),axis=1)
+                data_bottom_red_early = np.concatenate((data_bottom_red_early, \
+                                    np.expand_dims(data_early,axis=1)),axis=1)
+                data_bottom_red_mid = np.concatenate((data_bottom_red_mid, \
+                                    np.expand_dims(data_mid,axis=1)),axis=1)
+                data_bottom_red_late = np.concatenate((data_bottom_red_late, \
+                                    np.expand_dims(data_late,axis=1)),axis=1)
            
         if Case == primary: 
             graph_name = graph_name_tmp
@@ -185,8 +187,12 @@ def cascade(
     if request_2nd:
         data_set_rhs_3_min_red = np.amin(data_set_rhs_3_red,1)
         data_set_rhs_3_max_red = np.amax(data_set_rhs_3_red,1)
-        data_bottom_min_red = np.amin(data_bottom_red,1)
-        data_bottom_max_red = np.amax(data_bottom_red,1)
+        data_bottom_min_red_early = np.amin(data_bottom_red_early,1)
+        data_bottom_max_red_early = np.amax(data_bottom_red_early,1)
+        data_bottom_min_red_mid = np.amin(data_bottom_red_mid,1)
+        data_bottom_max_red_mid = np.amax(data_bottom_red_mid,1)
+        data_bottom_min_red_late = np.amin(data_bottom_red_late,1)
+        data_bottom_max_red_late = np.amax(data_bottom_red_late,1)
  
     data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
         data_early, data_mid, data_late, \
@@ -265,7 +271,11 @@ def cascade(
              data_bottom_min_gray, data_bottom_max_gray, color="gray", alpha = 0.3)
     if request_2nd: 
         ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_bottom_min_red, data_bottom_max_red, color="red", alpha = 0.3)
+             data_bottom_min_red_early, data_bottom_max_red_early, color="red", alpha = 0.3)
+        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
+             data_bottom_min_red_mid, data_bottom_max_red_mid, color="red", alpha = 0.3)
+        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
+             data_bottom_min_red_late, data_bottom_max_red_late, color="red", alpha = 0.3)
     if stats_available:
         ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              movingaverage(
@@ -293,7 +303,8 @@ def cascade(
            not data_type == 'ag_potet' and\
            not data_type == 'tot_extract' and\
            not data_type == 'aridity' and\
-           not data_type == 'unsat_demand':
+           not data_type == 'unsat_demand' and\
+           'deficit' not in data_type:
             ax4.legend(('Early century', 'Mid century', 'Late century'),
                        'upper right',frameon=False, fontsize=12)
         else:
