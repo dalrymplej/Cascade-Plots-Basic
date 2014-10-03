@@ -336,7 +336,6 @@ def cascade(
     
     max_xticks = 2
     y = range(start_year,end_year)
-#    dot_size = 40
     
     ##########################################################
     #   Prep the second plot (strip chart, right)            #
@@ -423,8 +422,6 @@ def cascade(
         ax3.xaxis.set_major_locator(xloc)
         plt.ylim(start_year,end_year)
         ax3.yaxis.set_visible(False)
-#        ax3.yaxis.tick_right()
-#        plt.yticks(ticks, fontsize=14)
         if data_type == 'stream' or \
            data_type == 'daminWdup' or \
            data_type == 'damoutWdup' or \
@@ -622,11 +619,6 @@ def cascade(
             plt.xlabel('$Tot \, WD$ [mm]', fontsize = 14)
         else:
             plt.xlabel('$Tot \, WD$ [in]', fontsize = 14)
-
-
-    data_set_rhs_3_min_gray = np.amin(data_set_rhs_3_gray,1)
-    data_set_rhs_3_max_gray = np.amax(data_set_rhs_3_gray,1)
-
     
     ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_gray, 
                       data_set_rhs_3_max_gray, color="gray", alpha = 0.3)
