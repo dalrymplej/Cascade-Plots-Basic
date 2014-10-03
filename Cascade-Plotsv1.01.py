@@ -84,6 +84,7 @@ def cascade(
     breadth = breadth_str.split(",")  # breadth is list of model runs that will be grey-shaded.
     num_breadth = len(breadth)
     breadth_collection = collections.Counter(breadth)
+    breadth_all_collection = breadth_collection
 
     if request_2nd:
         breadth_str_2nd = breadth_str_2nd.replace(" ","")
@@ -92,19 +93,13 @@ def cascade(
         breadth_2nd_collection = collections.Counter(breadth_2nd)
         breadth_all_collection = (breadth_collection - breadth_2nd_collection) +\
             breadth_2nd_collection
-        breadth_diff_collection = breadth_2nd_collection - breadth_collection
-        for thing in breadth_all_collection:
-            print thing
-    assert False
-        
-
     
     file_model_csv_list = [file_model_csv.replace(primary, Case) for Case in breadth_all_collection]
     file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(primary, Case) for Case in breadth_all_collection]
+    print cst.path_data, file_model_csv_w_path_list[0]
     
     file_stats_w_path = cst.path_auxilliary_files + file_stats
     
-    inum = 0
     for Case in breadth_all_collection:
         file_model_csv = file_model_csv_list[inum]
         file_model_csv_w_path = file_model_csv_w_path_list[inum]
@@ -123,10 +118,6 @@ def cascade(
                 stats_list, stats_available, SI \
                 )
             
-        if Case == primary: 
-            primary_inum = inum
-#        if inum == 0:
-            graph_name = graph_name_tmp
         if 'deficit' in data_type:
             data_type = 'water_deficit'
         
@@ -143,40 +134,62 @@ def cascade(
                 data_type, data_type_list, SI,\
                 start_year, end_year
                 )
-                
-        if inum == 0:    # if first data set, then keep it as comparitor
-            data_set_rhs_3_min = data_set_rhs_3
-            data_set_rhs_3_max = data_set_rhs_3
-            data_bottom_min = np.amin(np.column_stack((data_early,
+        if Case in breadth_collection:
+            try:
+              data_set_rhs_3_gray
+            except NameError:
+                data_set_rhs_3_gray = np.expand_dims(data_set_rhs_3,axis=1)
+                data_bottom_gray = np.column_stack((data_early,
                                                       data_mid,
-                                                      data_late)),1)
-            data_bottom_max = np.amax(np.column_stack((data_early,
+                                                      data_late))
+            else:
+                data_set_rhs_3_gray = np.concatenate((data_set_rhs_3_gray, \
+                                    np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
+                data_bottom_gray = np.concatenate((data_bottom_gray, np.column_stack((data_early,
                                                       data_mid,
-                                                      data_late)),1)
-
+                                                      data_late))),axis=1)
+        if Case in breadth_2nd_collection:
+            try:
+                 data_set_rhs_3_red
+            except NameError:
+                data_set_rhs_3_red = np.expand_dims(data_set_rhs_3,axis=1)
+                data_bottom_red = np.column_stack((data_early,
+                                                      data_mid,
+                                                      data_late))
+            else:
+                data_set_rhs_3_red = np.concatenate((data_set_rhs_3_red, \
+                                    np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
+                data_bottom_red = np.concatenate((data_bottom_red, np.column_stack((data_early,
+                                                      data_mid,
+                                                      data_late))),axis=1)
+           
+        if Case == primary: 
+            primary_inum = inum
+            graph_name = graph_name_tmp
+            
             # Save comparitor data in variables beginning with s
             sdata_set_rhs_1, sdata_set_rhs_2, sdata_set_rhs_3, \
                 sdata_early, sdata_mid, sdata_late, \
                 sdata_2D, sdata_2D_clipped \
             = data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
                 data_early, data_mid, data_late, \
-                data_2D, data_2D_clipped, 
+                data_2D, data_2D_clipped 
              
-        else:
-            data_set_rhs_3_min = np.amin(np.column_stack((data_set_rhs_3,
-                                                         data_set_rhs_3_min)),1)
-            data_set_rhs_3_max = np.amax(np.column_stack((data_set_rhs_3,
-                                                         data_set_rhs_3_max)),1)
-            data_bottom_min = np.amin(np.column_stack((data_early,
-                                                      data_mid,
-                                                      data_late,
-                                                      data_bottom_min)),1)
-            data_bottom_max = np.amax(np.column_stack((data_early,
-                                                      data_mid,
-                                                      data_late,
-                                                      data_bottom_max)),1)
-        inum += 1
+    data_set_rhs_3_min_gray = np.amin(data_set_rhs_3_gray,1)
+    data_set_rhs_3_max_gray = np.amax(data_set_rhs_3_gray,1)
+    data_bottom_min_gray = np.amin(data_bottom_gray,1)
+    data_bottom_max_gray = np.amax(data_bottom_gray,1)
 
+    try:
+        data_set_rhs_3_red
+    except NameError:
+        pass
+    else:
+        data_set_rhs_3_min_red = np.amin(data_set_rhs_3_red,1)
+        data_set_rhs_3_max_red = np.amax(data_set_rhs_3_red,1)
+        data_bottom_min_red = np.amin(data_bottom_red,1)
+        data_bottom_max_red = np.amax(data_bottom_red,1)
+ 
     data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
         data_early, data_mid, data_late, \
         data_2D, data_2D_clipped \
