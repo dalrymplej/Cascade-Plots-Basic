@@ -3,7 +3,7 @@
 # 
 # Cascade plots 
 #
-# February - September, 2014
+# February - October, 2014
 #
 # Python 2.7
 # Dependencies & libraries that need to be installed:
@@ -11,24 +11,6 @@
 #    matplotlib
 #    xlrd
 #
-#  Modified Mar 4 to
-#    - add colobar scale
-#    - drop purple from colorbar scale
-#    - add legend on colorbar
-#  Modified Mar 6 to
-#    - add box-and-whisker
-#    - change colors on bottom plot
-#  Modified Mar 10 for csv files
-#  Modified Mar 12 for paths and directories
-#  Modified Mar 15 for snow, irrigation, precip, ET, potet
-#  Modified Mar 20 for metric and std units
-#  Modified Jun 9 for automatic update of metadata information, added municipal use &
-#    unexercised water rights
-#  Modified summer 2014 to include metadata with file information,
-#    refining code to be "DRY", importing more metadata and path info
-#    from excel master file
-#  Added capability to grey-shade breadth of simulations
-
 
 ########################################################################################
 ########################################################################################
@@ -53,7 +35,9 @@ def cascade(
             ):
 
     """
-    Make a cascade plot and associated side & bottom graphs to show time series of discharge
+    Make a cascade plot and associated side & bottom graphs to show time series
+    of discharge.  Shade some of the lines with range of possible values for
+    alternative scenarios.
     """
     
     import numpy as np
@@ -168,6 +152,7 @@ def cascade(
         if Case == primary: 
             graph_name = graph_name_tmp
             graph_title = cst.metadata.define_model_run(file_model_csv)[0]
+            file_title = file_model_csv
 
             # Save comparitor data in variables beginning with s
             sdata_set_rhs_1, sdata_set_rhs_2, sdata_set_rhs_3, \
@@ -638,7 +623,7 @@ def cascade(
 
     textstr = 'Willamette Water 2100\n'+cst.metadata.model_run + \
               '\n\n' + ' Graph generated on ' + str(datetime.date.today()) +\
-              '\n\n' + ' File: ' + file_model_csv_list[0] +\
+              '\n\n' + ' File: ' + file_title +\
               '\n\n' + ' Data generated on ' + timetool.ctime(os.path.getctime(file_model_csv_w_path))
     if error_check: textstr = textstr + '\n\n' + 'Mass balance error = ' + mass_balance_err_str
 
