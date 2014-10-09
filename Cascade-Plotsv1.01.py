@@ -253,7 +253,7 @@ def cascade(
     ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_late, color="0.", lw=1.5)
     ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_bottom_min_gray, data_bottom_max_gray, color="gray", alpha = 0.3)
+             data_bottom_min_gray, data_bottom_max_gray, color="blue", alpha = 0.3)
     if request_2nd: 
         ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_bottom_min_red_early, data_bottom_max_red_early, color="red", alpha = 0.3)
@@ -606,7 +606,7 @@ def cascade(
             plt.xlabel('$Tot \, WD$ [in]', fontsize = 14)
     
     ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_gray, 
-                      data_set_rhs_3_max_gray, color="gray", alpha = 0.3)
+                      data_set_rhs_3_max_gray, color="blue", alpha = 0.3)
     if request_2nd:
         ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_red, 
                       data_set_rhs_3_max_red, color="red", alpha = 0.3)
@@ -1433,7 +1433,8 @@ def BoxPlot(axys, variable):
     import matplotlib.pyplot as plt
 #    import numpy as np
     variableT = variable.T
-    col = (0.6,0.6,1.)  # light blue in rgb
+#    col = (0.6,0.6,1.)  # light blue in rgb
+    col = (0.6, 0.6, 0.6) # light gray in rgb
     positions=range(2015,2096,10)
     box = axys.boxplot(variableT, vert=False,positions=positions,widths=9.2,
                        whis=2,sym='',patch_artist=True)
