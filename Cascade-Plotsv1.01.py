@@ -274,27 +274,10 @@ def cascade(
     ax4.set_ylabel(ylabel4, fontsize=14)
     if stats_available:
         ax4.legend(('Early century', 'Mid century', 'Late century','20$^{\t{th}}$ century'),
-               'upper right',frameon=False, fontsize=12)
+               loc='best',frameon=False, fontsize=12)
     else:
-        if not data_type == 'irrigation' and \
-           not data_type == 'municipal' and \
-           not data_type == 'water_rights' and \
-           not data_type == 'temperature' and \
-           not data_type == 'et' and \
-           not data_type == 'potet' and \
-           not data_type == 'for_et' and \
-           not data_type == 'for_potet' and \
-           not data_type == 'ag_et' and \
-           not data_type == 'ag_potet' and\
-           not data_type == 'tot_extract' and\
-           not data_type == 'aridity' and\
-           not data_type == 'unsat_demand' and\
-           'deficit' not in data_type:
-            ax4.legend(('Early century', 'Mid century', 'Late century'),
-                       'upper right',frameon=False, fontsize=12)
-        else:
-            ax4.legend(('Early century', 'Mid century', 'Late century'),
-                       'upper left',frameon=False, fontsize=12)
+        ax4.legend(('Early century', 'Mid century', 'Late century'),
+                   loc='best',frameon=False, fontsize=12)
         
     divider2 = make_axes_locatable(ax4)
     cax2 = divider2.append_axes("right", size="5%", pad=0.01)
