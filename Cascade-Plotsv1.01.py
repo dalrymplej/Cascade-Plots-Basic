@@ -201,7 +201,8 @@ def cascade(
 
     if data_type != 'temperature' and data_type != 'aridity' and\
                     'water_deficit' not in data_type and\
-                    data_type != 'unsat_demand':
+                    data_type != 'unsat_demand' and\
+                    data_type != 'h_drought':
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white','blue'],256)
     else:
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white',(0.9,0.1,0.1)],256)
@@ -368,6 +369,9 @@ def cascade(
             
     elif data_type == 'water_deficit':
         plt.xlabel('$Max \, WD$', fontsize = 14)
+
+    elif data_type == 'h_drought':
+        plt.xlabel('$Tot \, DD$', fontsize = 14)
 
     ax2.yaxis.set_visible(False)
 
@@ -589,6 +593,11 @@ def cascade(
         else:
             plt.xlabel('$Tot \, WD$ [in]', fontsize = 14)
     
+    elif data_type == 'h_drought':
+
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        plt.xlabel('$Tot \, DD$ [d/y]', fontsize = 14)
+    
     ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_gray, 
                       data_set_rhs_3_max_gray, color="blue", alpha = 0.3)
     if request_2nd:
@@ -651,12 +660,14 @@ def collect_data( \
     stats_list, stats_available, SI):
 
     """
-    Collecte needed information from csv file and return it for plotting
+    Collect needed information from csv file and return it for plotting
     """
     
     import numpy as np
     import xlrd
     import constants as cst   # constants.py contains constants used here
+    from movingaverage import movingaverage
+    from compare import compare_rows
     
     ###############################
     # Read data in from csv files #
@@ -915,22 +926,31 @@ def collect_data( \
         plot_structure = '3 by 2'
     elif data_type == 'h_drought':
         time = data_v[:,0]
-        data_yr = data_v[:,1]
+        data_yr = movingaverage(data_v[:,1],np.ones(30)/30.) #30-day running avg
+        ScenarioName = '_' + AltScenName(file_model_csv).split('_')[0] + '_'
+        if ScenarioName is '_Ref_':
+            data_hd1 = data_yr[:,1][0:(365*11)] #first 11 years
+        else: 
+            data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+                ScenarioName, "_Ref_"
+                ), delimiter=',',skip_header=1)) # Read csv file
+            data_hd1 = data_tmp[:,1][0:(365*11)] #first 11 years
+        data_smth_hd1 = movingaverage(data_hd1,np.ones(30)/30.)  #30-day running avg
+        
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "_Ref_", "_HighClim_"
+            ScenarioName, "_HighClim_"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_hd2 = data_tmp[:,1][0:(365*11)] #first 11 years
         data_smth_hd2 = movingaverage(data_hd2,np.ones(30)/30.)  #30-day running avg
+        
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "_Ref_", "_LowClim_"
+            ScenarioName, "_LowClim_"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_hd3 = data_tmp[:,1][0:(365*11)] #first 11 years
         data_smth_hd3 = movingaverage(data_hd3,np.ones(30)/30.) #30-day running avg
         
-        data_hd1 = data_yr[0:(365*11)] #first 11 years
-        data_smth_hd1 = movingaverage(data_hd1,np.ones(30)/30.) #30-day running avg
         graph_name = file_model_csv[:-4] + '_Hydrologic_Drought'
-        plot_structure = '4 by 2'
+        plot_structure = '3 by 2'
 
   # Do Error checking if Willamette at Portland
     if "Willamette_at_Portland" in file_model_csv:
@@ -1018,16 +1038,12 @@ def collect_data( \
         data_2D_hd2 = np.reshape(np.array(data_smth_hd2), (-1,365)) #2D matrix of data in numpy format
         data_2D_hd3 = np.reshape(np.array(data_smth_hd3), (-1,365)) #2D matrix of data in numpy format
         data_2D_hd = np.vstack((data_2D_hd1, data_2D_hd2, data_2D_hd3))
-        
-        ###HERE####
-        
-        window_size_days = 30
-        window_size_yrs = 10
-        threshhold = movingaverage_first2D(data_2D_avg, window_size_days, window_size_yrs)
-         
-       
+        Q10 = np.percentile(data_2D_hd,10.,axis=0)
+        data_2D = compare_rows(data_2D,Q10)
     data_2D_clipped = np.empty_like(data_2D)
     data_2D_clipped = np.clip(data_2D, plot_lower_bound, plot_upper_bound)
+    
+    if data_type == 'h_drought': data_2D_clipped = data_2D
     
     return data_2D, data_2D_clipped, data_yr, time, data_length, num_water_yrs,\
        start_year, end_year, graph_name, plot_structure, error_check, \
@@ -1197,12 +1213,24 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         wd_data = [np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)]
         yearly_max = wd_data
 
+    elif data_type == 'h_drought':
+        d_data = np.sum(data_2D,axis=1) 
+        extra = np.median(d_data[-9:])
+        d_data_decadal = np.reshape(np.append(d_data, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = d_data_decadal
+
 #   Calculate values for 3rd strip chart on right-hand-side (yearly avg)
     averaging_window = 9
     window_raw = np.array([])
     window_raw = np.append(window_raw,[n_take_k(averaging_window-1,i) for i in range(averaging_window)])
     window = window_raw / np.sum(window_raw)  # normalized weights
-    if data_type != 'swe_pre' and data_type != 'water_deficit':
+    if data_type == 'h_drought':
+        yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        yearly_avg = movingaverage(
+            yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
+            window)[averaging_window:-averaging_window]
+        data_set_rhs_3 = yearly_avg*365.
+    elif data_type != 'swe_pre' and data_type != 'water_deficit':   ###THIS IS MOST CASES ***
         yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         yearly_avg = movingaverage(
             yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
@@ -1351,6 +1379,10 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Water \,Deficit\,$ [in/d]'
             ylabel4 = '$WD\,$ [in/d]'
     
+    elif 'h_drought' in data_type:
+        ylabel2 = '$Drought \,Days,$ [d/y]'
+        ylabel4 = '$Frac DDs\,$ [-]'
+
     return ylabel2, ylabel4
 
 
