@@ -50,6 +50,7 @@ def cascade(
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
     import metadata as md
     import collections
+    from movingaverage import movingaverage
     
     np.set_printoptions(precision=3) 
     
@@ -1043,6 +1044,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
 
     import numpy as np
     import constants as cst   # constants.py contains constants used here
+    from movingaverage import movingaverage, n_take_k
 
     ##########################################################
     # Assemble the data needed on the right-hand-side plots. #
@@ -1359,6 +1361,7 @@ def process_bottom_strip(data_2D, data_yr, num_water_yrs, data_length, \
     """
     
     import numpy as np
+    from movingaverage import movingaverage, n_take_k
     
     ##########################################################
     #   Prep the fourth plot (bottom strip)                  #
@@ -1391,41 +1394,6 @@ def process_bottom_strip(data_2D, data_yr, num_water_yrs, data_length, \
                                
     return data_early, data_mid, data_late, window, averaging_window        
     
-
-
-def n_take_k(n,k):
-    """Returns (n take k),
-    the binomial coefficient.
-
-    author: https://code.google.com/p/econpy/source/browse/trunk/pytrix/pytrix.py
-    """
-    n, k = int(n), int(k)
-    assert (0<=k<=n), "n=%f, k=%f"%(n,k)
-    k = min(k,n-k)
-    c = 1
-    if k>0:
-        for i in xrange(k):
-            c *= n-i
-            c //= i+1
-    return c
-
-def movingaverage(interval, window):
-    """
-    Calculate a moving average and return numpy array (dimension 1)
-    """
-    import numpy as np
-    return np.convolve(interval, window, 'same')
-
-def movingaverage_first2D(array_2D, window_size_days, window_size_yrs):
-    """
-    Calculate a moving average of first window_size_yrs years over
-      a window of window_size_days, and return a numpy array (dimension 1)
-    """
-    import numpy as np
-    interval = [np.average(array_2D[0:window_size_yrs,i]) for i in range(365)]
-    window = np.ones(int(window_size_days))/float(window_size_days)
-    return np.convolve(interval, window, 'same')
-
 def month_labels (axys):
     """
     Place month labels on horizontal axis.  This is a little tricky,
