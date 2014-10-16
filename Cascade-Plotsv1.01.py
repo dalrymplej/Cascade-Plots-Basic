@@ -912,6 +912,25 @@ def collect_data( \
         graph_name = file_model_csv[:-4] + '_pet'
         if data_type != 'potet': graph_name = file_model_csv[:-4] + data_type
         plot_structure = '3 by 2'
+    elif data_type == 'h_drought':
+        time = data_v[:,0]
+        data_hd1 = data_v[:,1]
+        data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+            "_Ref_", "_HighClim_"
+            ), delimiter=',',skip_header=1)) # Read csv file
+        data_hd2 = data_tmp[:,1][0:(365*11-1)] #first 11 years
+        data_smth_hd2 = movingaverage(data_hd2,np.ones(30))
+        data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+            "_Ref_", "_LowClim_"
+            ), delimiter=',',skip_header=1)) # Read csv file
+        data_hd3 = data_tmp[:,1][0:(365*11-1)] #first 11 years
+        data_smth_hd3 = movingaverage(data_hd3,np.ones(30))
+        
+        data_yr = data_hd1
+        data_hd1 = data_v[:,1][0:(365*11-1)] #first 11 years
+        data_smth_hd1 = movingaverage(data_hd1,np.ones(30))
+        graph_name = file_model_csv[:-4] + '_Hydrologic_Drought'
+        plot_structure = '4 by 2'
 
   # Do Error checking if Willamette at Portland
     if "Willamette_at_Portland" in file_model_csv:
@@ -989,6 +1008,15 @@ def collect_data( \
         plot_upper_bound = np.percentile(data_2D,97.5)
     else:     ## All cases other than above
         data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
+    if data_type == 'h_drought':
+         data_2D_hd1 = np.reshape(np.array(data_smth_hd1), (-1,365)) #2D matrix of data in numpy format
+         data_2D_hd2 = np.reshape(np.array(data_smth_hd2), (-1,365)) #2D matrix of data in numpy format
+         data_2D_hd3 = np.reshape(np.array(data_smth_hd3), (-1,365)) #2D matrix of data in numpy format
+         window_size_days = 30
+         window_size_yrs = 10
+         threshhold = movingaverage_first2D(data_2D_avg, window_size_days, window_size_yrs)
+         
+       
     data_2D_clipped = np.empty_like(data_2D)
     data_2D_clipped = np.clip(data_2D, plot_lower_bound, plot_upper_bound)
     
