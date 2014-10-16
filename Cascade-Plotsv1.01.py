@@ -914,7 +914,7 @@ def collect_data( \
         plot_structure = '3 by 2'
     elif data_type == 'h_drought':
         time = data_v[:,0]
-        data_hd1 = data_v[:,1]
+        data_yr = data_v[:,1]
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "_Ref_", "_HighClim_"
             ), delimiter=',',skip_header=1)) # Read csv file
@@ -926,8 +926,8 @@ def collect_data( \
         data_hd3 = data_tmp[:,1][0:(365*11-1)] #first 11 years
         data_smth_hd3 = movingaverage(data_hd3,np.ones(30))
         
-        data_yr = data_hd1
-        data_hd1 = data_v[:,1][0:(365*11-1)] #first 11 years
+        data_hd1 = data_yr[0:(365*11-1)] #first 11 years
+        assert False
         data_smth_hd1 = movingaverage(data_hd1,np.ones(30))
         graph_name = file_model_csv[:-4] + '_Hydrologic_Drought'
         plot_structure = '4 by 2'
@@ -957,8 +957,9 @@ def collect_data( \
         mass_balance_err_str = ''
   # End error check
         
-    time = time[cst.day_of_year_oct1 - 1:] # water year
-    data_yr = data_yr[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
+    time = time[cst.day_of_year_oct1 - 1:] # water year    
+    data_yr = data_yr[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # truncate data to water year
+    
     if data_type == 'tot_damdiff':
         data_yr_tmp = data_yr_tmp[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
     data_length = len(time)
