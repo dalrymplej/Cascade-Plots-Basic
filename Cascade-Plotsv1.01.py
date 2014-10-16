@@ -918,17 +918,16 @@ def collect_data( \
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "_Ref_", "_HighClim_"
             ), delimiter=',',skip_header=1)) # Read csv file
-        data_hd2 = data_tmp[:,1][0:(365*11-1)] #first 11 years
-        data_smth_hd2 = movingaverage(data_hd2,np.ones(30))
+        data_hd2 = data_tmp[:,1][0:(365*11)] #first 11 years
+        data_smth_hd2 = movingaverage(data_hd2,np.ones(30)/30.)  #30-day running avg
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "_Ref_", "_LowClim_"
             ), delimiter=',',skip_header=1)) # Read csv file
-        data_hd3 = data_tmp[:,1][0:(365*11-1)] #first 11 years
-        data_smth_hd3 = movingaverage(data_hd3,np.ones(30))
+        data_hd3 = data_tmp[:,1][0:(365*11)] #first 11 years
+        data_smth_hd3 = movingaverage(data_hd3,np.ones(30)/30.) #30-day running avg
         
-        data_hd1 = data_yr[0:(365*11-1)] #first 11 years
-        assert False
-        data_smth_hd1 = movingaverage(data_hd1,np.ones(30))
+        data_hd1 = data_yr[0:(365*11)] #first 11 years
+        data_smth_hd1 = movingaverage(data_hd1,np.ones(30)/30.) #30-day running avg
         graph_name = file_model_csv[:-4] + '_Hydrologic_Drought'
         plot_structure = '4 by 2'
 
@@ -1009,13 +1008,21 @@ def collect_data( \
         plot_upper_bound = np.percentile(data_2D,97.5)
     else:     ## All cases other than above
         data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
+        
     if data_type == 'h_drought':
-         data_2D_hd1 = np.reshape(np.array(data_smth_hd1), (-1,365)) #2D matrix of data in numpy format
-         data_2D_hd2 = np.reshape(np.array(data_smth_hd2), (-1,365)) #2D matrix of data in numpy format
-         data_2D_hd3 = np.reshape(np.array(data_smth_hd3), (-1,365)) #2D matrix of data in numpy format
-         window_size_days = 30
-         window_size_yrs = 10
-         threshhold = movingaverage_first2D(data_2D_avg, window_size_days, window_size_yrs)
+        data_smth_hd1 = data_smth_hd1[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # truncate data to water year
+        data_smth_hd2 = data_smth_hd2[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # truncate data to water year
+        data_smth_hd3 = data_smth_hd3[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # truncate data to water year
+        data_2D_hd1 = np.reshape(np.array(data_smth_hd1), (-1,365)) #2D matrix of data in numpy format
+        data_2D_hd2 = np.reshape(np.array(data_smth_hd2), (-1,365)) #2D matrix of data in numpy format
+        data_2D_hd3 = np.reshape(np.array(data_smth_hd3), (-1,365)) #2D matrix of data in numpy format
+        data_2D_hd = np.vstack((data_2D_hd1, data_2D_hd2, data_2D_hd3))
+        
+        ###HERE####
+        
+        window_size_days = 30
+        window_size_yrs = 10
+        threshhold = movingaverage_first2D(data_2D_avg, window_size_days, window_size_yrs)
          
        
     data_2D_clipped = np.empty_like(data_2D)
