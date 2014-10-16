@@ -613,13 +613,13 @@ def cascade(
     ###################################################################
     #   Add metadata text box in lower right, citing figure details   #
     ###################################################################
-
     textstr = 'Willamette Water 2100\n'+cst.metadata.model_run + \
               '\n\n' + ' Graph generated on ' + str(datetime.date.today()) +\
               '\n\n' + ' File: ' + file_title +\
               '\n\n' + ' Data generated on ' + timetool.ctime(os.path.getctime(file_model_csv_w_path))
     if error_check: textstr = textstr + '\n\n' + 'Mass balance error = ' + mass_balance_err_str
-
+    if data_type == 'h_drought': textstr = textstr + '\n\n' +\
+    'Hydrological drought as defined in $Prudhomme \, et \, al., \, PNAS$, 2013.'
     props = dict(boxstyle='round', facecolor='white', alpha=0.5, lw=0.)
 
     ax4.text(1.03, -0.2, textstr, transform=ax.transAxes, fontsize=6,
@@ -953,7 +953,7 @@ def collect_data( \
         plot_structure = '3 by 2'
 
   # Do Error checking if Willamette at Portland
-    if "Willamette_at_Portland" in file_model_csv:
+    if "Willamette_at_Portland" in file_model_csv and data_type != 'h_drought':
         error_check = True
         data_spQ = data_yr / cst.Willamette_Basin_area_at_PDX * 86400.  #m in each day
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
@@ -1380,8 +1380,8 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel4 = '$WD\,$ [in/d]'
     
     elif 'h_drought' in data_type:
-        ylabel2 = '$Drought \,Days,$ [d/y]'
-        ylabel4 = '$Frac DDs\,$ [-]'
+        ylabel2 = '$Drought \,Day$ [yes/no]'
+        ylabel4 = '$Frac \, DDs\,$ [-]'
 
     return ylabel2, ylabel4
 
@@ -1489,8 +1489,16 @@ def metadata(fig,show,climates,files):
 ##  show = whether the plot will be show on the screen  ##
 ##  climates = what climate models are being used  ##
 ##  files = the data file names with paths  ##
+    import time as timetool, os.path
+
     ax = fig.add_subplot(111,position=[0.125,0.165,0.001,0.001])
-    textstr = 'Willamette Water 2100\nGraph generated on ' + str(datetime.date.today()) +'\n\n'+ climates[0] + ' data generated on ' + time.ctime(os.path.getctime(files[0])) +'\n'+ climates[1] + ' data generated on ' + time.ctime(os.path.getctime(files[1])) +'\n'+ climates[2] + ' data generated on ' + time.ctime(os.path.getctime(files[2])) +'\n'+ climates[3] + ' data generated on ' + time.ctime(os.path.getctime(files[3]))
+    textstr = 'Willamette Water 2100\n Graph generated on ' \
+    + str(datetime.date.today()) +'\n\n'+ climates[0] \
+    + ' data generated on ' + time.ctime(os.path.getctime(files[0])) \
+    +'\n'+ climates[1] + ' data generated on ' \
+    + time.ctime(os.path.getctime(files[1])) +'\n'+ climates[2] \
+    + ' data generated on ' + time.ctime(os.path.getctime(files[2])) \
+    +'\n'+ climates[3] + ' data generated on ' + time.ctime(os.path.getctime(files[3]))
 #    if show:
 #        props = dict(boxstyle='round', facecolor=(0.75,0.75,0.75), lw=0.)
 #    else:
