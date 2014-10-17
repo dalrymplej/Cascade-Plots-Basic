@@ -898,7 +898,7 @@ def collect_data( \
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "ET_by_Elevation_(mm)", "Daily_WaterMaster_Metrics"
             ), delimiter=',',skip_header=1)) # Read csv file
-        data_irrig = np.add(data_v[:,2], data_v[:,3])
+        data_irrig = np.add(data_tmp[:,2], data_tmp[:,3])
         
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "ET_by_Elevation_(mm)", "Climate"
