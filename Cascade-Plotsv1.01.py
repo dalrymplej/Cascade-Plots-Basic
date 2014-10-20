@@ -342,7 +342,8 @@ def cascade(
 
     elif data_type == 'tot_extract' or \
        data_type == 'aridity' or\
-       data_type == 'unsat_demand':
+       data_type == 'unsat_demand' or\
+       data_type == 'tot_consumed':
         plt.xlabel('$Min\,$', fontsize = 14)
 
     elif data_type == 'swe_pre' or data_type == 'aridity':
@@ -413,7 +414,8 @@ def cascade(
             plt.xlabel('$Max \, T$', fontsize = 14)
         elif data_type == 'tot_extract' or\
              data_type == 'aridity' or\
-             data_type == 'unsat_demand':
+             data_type == 'unsat_demand' or\
+             data_type == 'tot_consumed':
             plt.xlabel('$Max \,$', fontsize = 14)
 
     ##########################################################
@@ -501,7 +503,8 @@ def cascade(
         else:
             plt.xlabel('$Tot \, Ann \, Irrig\,$\n[thousand ac-ft]', fontsize = 14)
 
-    elif data_type == 'tot_extract':
+    elif data_type == 'tot_extract' or\
+         data_type == 'tot_consumed':
 
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
         if SI:
@@ -884,6 +887,19 @@ def collect_data( \
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_total water use by people'
         plot_structure = '4 by 2'
+    elif data_type == 'tot_consumed':
+        time = data_v[:,0]
+        data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
+                          np.add(data_v[:,4],data_v[:,5])   )
+        data_tmp = np.add(data_v[:,4], data_v[:,5])
+#       get average metro water used for Jan 1 - Feb 28:
+        data_return = [np.mean(data_tmp[365*i+2:365*i+33]) for i in range(len(data_yr)/365)]  #from Jan 3 to Feb 3
+        data_return = np.repeat(data_return,365) #repeat each element of data_return 365 times.  I.e., fill each row with same number
+        data_yr -= data_return
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_total consumptive water use'
+        plot_structure = '4 by 2'
     elif data_type == 'unsat_demand':
         time = data_v[:,0]
         data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
@@ -1116,6 +1132,18 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
+    if data_type == 'tot_consumed':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_2 = Q_max_decadal
+        
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
+                  
     if data_type == 'unsat_demand':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
@@ -1302,6 +1330,14 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
         else:
             ylabel2 = '$Tot \,Extract \,$ [cfs]'
             ylabel4 = '$Extract\,$ [cfs]'
+                  
+    if data_type == 'tot_consumed':
+        if SI:
+            ylabel2 = '$Tot \,Consump\, Extract \,$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Consump\,$ [m$^{\t{3}}$/s]'
+        else:
+            ylabel2 = '$Tot \,Consump\, Extract \,$ [cfs]'
+            ylabel4 = '$Consump,$ [cfs]'
                   
     if data_type == 'unsat_demand':
         if SI:
