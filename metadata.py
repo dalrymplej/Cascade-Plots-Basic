@@ -5,7 +5,7 @@ File containing metadata information for WW2100 model run
 class UnknownFileType(BaseException):
     pass
 
-AltScenarios = ["Ref","LowClim","HighClim","FireSuppress","UrbExpand","HighPop","FullCostUrb"]
+AltScenarios = ["Ref","LowClim","HighClim","FireSuppress","UrbExpand","HighPop","FullCostUrb", "EarlyReFill"]
 
 def define_model_run(name):
     import xlrd
@@ -36,6 +36,9 @@ def define_model_run(name):
     elif "FullCostUrb" in Case:  
         model = "Full Cost Urban"
         short_name = 'FullCostUrb'
+    elif "EarlyReFill" in Case:
+        model = "Early Refill"
+        short_name = 'EarlyReFill'
     else:
         raise UnknownFileType()
     return model, short_name
