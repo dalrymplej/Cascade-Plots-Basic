@@ -798,7 +798,7 @@ def collect_data( \
          data_type == 'for_et' or\
          data_type == 'ag_et': 
         time = data_v[:,0]
-        if data_type != 'ag_et': data_yr = data_v[:,1]
+        if data_type != 'ag_et': data_yr = data_v[:,2]
         if data_type == 'ag_et': data_yr = data_v[:,3]
         if not SI:
             data_yr = data_yr/cst.in_to_mm
@@ -919,14 +919,14 @@ def collect_data( \
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "ET_by_Elevation_(mm)", "Climate"
             ), delimiter=',',skip_header=1)) # Read csv file
-        data_precip = data_tmp[:,1]
+        data_precip = data_tmp[:,2]
         
         data_yr = data_pet/np.add(data_irrig, data_precip)
         graph_name = file_model_csv[:-4] + '_Aridity_Index'
         plot_structure = '4 by 2'
     elif data_type == 'temperature':
         time = data_v[:,0]
-        data_yr = data_v[:,2]
+        data_yr = data_v[:,1]
         if not SI: data_yr = (data_yr/cst.F_to_C) + 32.
         graph_name = file_model_csv[:-4] + '_temperature'
         plot_structure = '4 by 2'
@@ -980,11 +980,11 @@ def collect_data( \
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "Willamette_at_Portland_(m3_s)", "Climate"
             ), delimiter=',',skip_header=1)) # Read csv file
-        data_precip = data_tmp[:,1]/1000.
-        Basin_spQ_sum = np.sum(data_spQ)/len(data_spQ)*365.25          # avg specific discharge each year
-        Basin_ET_sum = np.sum(data_ET)/len(data_ET)*365.25             # avg ET each year
-        Basin_precip_sum = np.sum(data_precip)/len(data_precip)*365.25 # avg precip each year
-        # print Basin_spQ_sum, Basin_ET_sum, Basin_precip_sum
+#        data_precip = data_tmp[:,2]/1000.
+        Basin_spQ_sum = np.sum(data_spQ)/len(data_spQ)*365.          # avg specific discharge each year
+        Basin_ET_sum = np.sum(data_ET)/len(data_ET)*365.             # avg ET each year
+        Basin_precip_sum = np.sum(data_precip)/len(data_precip)*365. # avg precip each year
+#        print Basin_spQ_sum, Basin_ET_sum, Basin_precip_sum
         mass_balance_err = 100 - (Basin_spQ_sum + Basin_ET_sum)/Basin_precip_sum*100.
         mass_balance_err_str = "{0:.3f}".format(mass_balance_err)+'%'
 #        print mass_balance_err_str
