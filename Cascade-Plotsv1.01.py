@@ -280,6 +280,9 @@ def cascade(
     else:
         ax4.legend(('Early century', 'Mid century', 'Late century'),
                    loc='best',frameon=False, fontsize=12)
+
+#   Uncomment this to set a limit on y axis:
+#    ax4.set_ylim(0, 50)
         
     divider2 = make_axes_locatable(ax4)
     cax2 = divider2.append_axes("right", size="5%", pad=0.01)
@@ -980,7 +983,7 @@ def collect_data( \
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "Willamette_at_Portland_(m3_s)", "Climate"
             ), delimiter=',',skip_header=1)) # Read csv file
-#        data_precip = data_tmp[:,2]/1000.
+        data_precip = data_tmp[:,2]/1000.
         Basin_spQ_sum = np.sum(data_spQ)/len(data_spQ)*365.          # avg specific discharge each year
         Basin_ET_sum = np.sum(data_ET)/len(data_ET)*365.             # avg ET each year
         Basin_precip_sum = np.sum(data_precip)/len(data_precip)*365. # avg precip each year
