@@ -203,7 +203,8 @@ def cascade(
     if data_type != 'temperature' and data_type != 'aridity' and\
                     'water_deficit' not in data_type and\
                     data_type != 'unsat_demand' and\
-                    data_type != 'h_drought':
+                    data_type != 'h_drought' and\
+                    data_type != 'CWDtoD':
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white','blue'],256)
     else:
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white',(0.9,0.1,0.1)],256)
@@ -250,11 +251,11 @@ def cascade(
     
     ax4 = fig.add_subplot(gs1[1,0], aspect = 'auto', sharex=ax)
     ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_early, color="0.62", lw=1.5)
+             data_early,  '--', color="0.0", lw=1.5)
     ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_mid, color="0.32", lw=1.5)
+             data_mid, color="0.32", lw=1.)
     ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_late, color="0.", lw=1.5)
+             data_late, color="0.", lw=2.)
     ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_bottom_min_gray, data_bottom_max_gray, color="blue", alpha = 0.3)
     if request_2nd: 
@@ -347,7 +348,8 @@ def cascade(
     elif data_type == 'tot_extract' or \
        data_type == 'aridity' or\
        data_type == 'unsat_demand' or\
-       data_type == 'tot_consumed':
+       data_type == 'tot_consumed' or\
+       data_type == 'CWDtoD':
         plt.xlabel('$Min\,$', fontsize = 14)
 
     elif data_type == 'swe_pre' or data_type == 'aridity':
@@ -419,7 +421,8 @@ def cascade(
         elif data_type == 'tot_extract' or\
              data_type == 'aridity' or\
              data_type == 'unsat_demand' or\
-             data_type == 'tot_consumed':
+             data_type == 'tot_consumed' or\
+             data_type == 'CWDtoD':
             plt.xlabel('$Max \,$', fontsize = 14)
 
     ##########################################################
@@ -515,6 +518,11 @@ def cascade(
             plt.xlabel('$Avg \, Extract\,$\n[m$^3$/s]', fontsize = 14)
         else:
             plt.xlabel('$Avg \, Extract\,$\n[thousand ac-ft]', fontsize = 14)
+
+    elif data_type == 'CWDtoD':
+
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        plt.xlabel('$Avg Fraction$\n[-]', fontsize = 14)
 
     elif data_type == 'unsat_demand':
 
@@ -891,7 +899,7 @@ def collect_data( \
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_total water use by people'
         plot_structure = '4 by 2'
-    elif data_type == 'tot_consumed':
+    elif data_type == 'tot_consumed' or data_type == 'CWDtoD':
         time = data_v[:,0]
         data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
                           np.add(data_v[:,4],data_v[:,5])   )
@@ -902,7 +910,14 @@ def collect_data( \
         data_yr -= data_return
         if not SI:
             data_yr = data_yr/cst.acftperday_to_m3s
-        graph_name = file_model_csv[:-4] + '_total consumptive water use'
+        if data_type == 'tot_consumed':
+            graph_name = file_model_csv[:-4] + '_total consumptive water use'
+        elif data_type == 'CWDtoD':
+            data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+                "Daily_WaterMaster_Metrics", "Willamette_at_Portland_(m3_s)"
+                ), delimiter=',',skip_header=1)) # Read csv file
+            data_yr = data_yr/data_tmp[:,1]
+            graph_name = file_model_csv[:-4] + '_tot consump use rel to Willamette'
         plot_structure = '4 by 2'
     elif data_type == 'unsat_demand':
         time = data_v[:,0]
@@ -1136,7 +1151,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
-    if data_type == 'tot_consumed':
+    if data_type == 'tot_consumed' or 'CWDtoD':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -1343,6 +1358,10 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Tot \,Consump\, Extract \,$ [cfs]'
             ylabel4 = '$Consump,$ [cfs]'
                   
+    if data_type == 'CWDtoD':
+        ylabel2 = '$Frac Extract \,$ [-]'
+        ylabel4 = '$Frac$ [-]'
+                  
     if data_type == 'unsat_demand':
         if SI:
             ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
@@ -1496,7 +1515,7 @@ def BoxPlot(axys, variable):
     col = (0.6, 0.6, 0.6) # light gray in rgb
     positions=range(2015,2096,10)
     box = axys.boxplot(variableT, vert=False,positions=positions,widths=9.2,
-                       whis=2,sym='',patch_artist=True)
+                       whis=2,sym=' ',patch_artist=True)
     plt.setp(box['boxes'], color=col)
     colors = [col]*9
     for patch, colors in zip(box['boxes'], colors):
@@ -1506,6 +1525,9 @@ def BoxPlot(axys, variable):
     for whisker in box['whiskers']:
         whisker.set_linestyle('solid')
         whisker.set_linewidth(1)
+        whisker.set_color('black')
+    for medians in box['medians']:
+        medians.set_color('black')
     return
 
 def ct(water_yr_array):
