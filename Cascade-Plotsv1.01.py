@@ -336,6 +336,9 @@ def cascade(
         if data_type == 'tot_damdiff':
             plt.xlabel('$Min \, \Delta Q$', fontsize = 14)
         
+    elif data_type == 'pool':
+        plt.xlabel('$Min \, \Delta Ht$', fontsize = 14)
+        
     elif data_type == 'snow':
         plt.xlabel('$Apr \, 1\, SWE$', fontsize = 14)
         
@@ -416,6 +419,8 @@ def cascade(
             if data_type == 'tot_damdiff':
                 plt.xlabel('$Max \, \Delta Q$', fontsize = 14)
             
+        elif data_type == 'pool':
+            plt.xlabel('$Max$', fontsize = 14)
         elif data_type == 'temperature':
             plt.xlabel('$Max \, T$', fontsize = 14)
         elif data_type == 'tot_extract' or\
@@ -461,6 +466,14 @@ def cascade(
             else:
                 plt.xlabel('$Avg \, \Delta Q$ [cfs]', fontsize = 14)
         
+    elif data_type == 'pool':
+        
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        if SI:
+            plt.xlabel('$Avg \, \Delta \, Pool \, Ht$ [m]', fontsize = 14)
+        else:
+            plt.xlabel('$Avg \, \Delta \, Pool \, Ht$ [ft]', fontsize = 14)
+            
     elif data_type == 'temperature':
         
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
@@ -721,6 +734,23 @@ def collect_data( \
         if not SI: data_yr = data_yr/cst.cfs_to_m3
         graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
         graph_name = graph_name + '_tot_reservoir_inflow'
+        plot_structure = '4 by 2'
+    elif data_type == 'pool':
+        time = data_v[:,0]
+        data_yr = np.zeros_like(data_v[:,1])
+        file_number = -1
+        for data_type_check in data_type_list:
+            file_number += 1
+            if data_type_check == 'damin' and \
+               're-regulating' not in file_name_list[file_number]:
+                data_tmp = np.array(np.genfromtxt(cst.path_data + 
+                   file_name_list[file_number]
+                   , delimiter=',',skip_header=1)) # Read csv file
+                data_yr = np.add(data_yr, data_tmp[:,1])
+        data_yr = np.subtract(data_yr,np.max(data_yr))
+        if not SI: data_yr = data_yr/0.3048
+        graph_name = AltScenName(file_model_csv)  # For this graph name, we will want to strip csv-specific parts of string.
+        graph_name = graph_name + '_reservoir_pool'
         plot_structure = '4 by 2'
     elif data_type == 'tot_damdiff':
         time = data_v[:,0]
