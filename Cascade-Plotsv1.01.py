@@ -237,7 +237,9 @@ def cascade(
     month_labels(ax)
     ax.set_ylabel('$Water \, Year$', fontsize=14)
     ticks=np.arange(2020,2100,10)
-    plt.yticks(ticks, fontsize=14)
+    ticklabels = ['%i'%w for w in np.arange(2020,2100,10)]
+    plt.ticklabel_format(axis='y',style='plain',useOffset=False)
+    plt.yticks(ticks, ticklabels, fontsize=14)
     plt.title(graph_title,fontsize=12)
     plt.suptitle(title, fontsize = 18)
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.85, lw=0)
@@ -635,8 +637,9 @@ def cascade(
     xloc = plt.MaxNLocator(max_xticks)
     ax5.xaxis.set_major_locator(xloc)
     plt.ylim(start_year,end_year)
+#    plt.ticklabel_format(axis='y',style='plain',useOffset=False)
     ax5.yaxis.tick_right()
-    plt.yticks(ticks, fontsize=14)
+    plt.yticks(ticks, ticklabels, fontsize=14)
 
     ###################################################################
     #   Add metadata text box in lower right, citing figure details   #
