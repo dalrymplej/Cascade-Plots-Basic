@@ -39,6 +39,9 @@ def define_model_run(name):
     elif "EarlyReFill" in Case:
         model = "Early Refill"
         short_name = 'EarlyReFill'
+    elif "Extreme" in Case:
+        model = "Extreme"
+        short_name = 'Extreme'
     else:
         raise UnknownFileType()
     return model, short_name
