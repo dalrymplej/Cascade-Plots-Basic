@@ -134,7 +134,7 @@ def cascade(
                                                    np.column_stack((data_early,
                                                       data_mid,
                                                       data_late))),axis=1)
-        if Case in breadth_2nd_collection:
+        if request_2nd and Case in breadth_2nd_collection:
             try:
                  data_set_rhs_3_red
             except NameError:
