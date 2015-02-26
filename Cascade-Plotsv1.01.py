@@ -124,31 +124,38 @@ def cascade(
               data_set_rhs_3_gray
             except NameError:
                 data_set_rhs_3_gray = np.expand_dims(data_set_rhs_3,axis=1)
-                data_bottom_gray = np.column_stack((data_early,
-                                                      data_mid,
-                                                      data_late))
+#1                data_bottom_gray = np.column_stack((data_early,
+#1                                                      data_mid,
+#1                                                      data_late))
+#1                data_bottom_gray = np.column_stack(data_late)
+                data_bottom_gray = np.expand_dims(data_late,axis=1)
             else:
                 data_set_rhs_3_gray = np.concatenate((data_set_rhs_3_gray, \
                                     np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
-                data_bottom_gray = np.concatenate((data_bottom_gray, 
-                                                   np.column_stack((data_early,
-                                                      data_mid,
-                                                      data_late))),axis=1)
+#1                data_bottom_gray = np.concatenate((data_bottom_gray, 
+#1                                                   np.column_stack((data_early,
+#1                                                      data_mid,
+#1                                                      data_late))),axis=1)
+#1                data_bottom_gray = np.concatenate((data_bottom_gray, 
+#1                                                   np.column_stack((
+#1                                                      data_late))),axis=1)
+                data_bottom_gray = np.concatenate((data_bottom_gray, \
+                                    np.expand_dims(data_late,axis=1)),axis=1)
         if request_2nd and Case in breadth_2nd_collection:
             try:
                  data_set_rhs_3_red
             except NameError:
                 data_set_rhs_3_red = np.expand_dims(data_set_rhs_3,axis=1)
-                data_bottom_red_early = np.expand_dims(data_early,axis=1)
-                data_bottom_red_mid = np.expand_dims(data_mid,axis=1)
+#1                data_bottom_red_early = np.expand_dims(data_early,axis=1)
+#1                data_bottom_red_mid = np.expand_dims(data_mid,axis=1)
                 data_bottom_red_late = np.expand_dims(data_late,axis=1)
             else:
                 data_set_rhs_3_red = np.concatenate((data_set_rhs_3_red, \
                                     np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
-                data_bottom_red_early = np.concatenate((data_bottom_red_early, \
-                                    np.expand_dims(data_early,axis=1)),axis=1)
-                data_bottom_red_mid = np.concatenate((data_bottom_red_mid, \
-                                    np.expand_dims(data_mid,axis=1)),axis=1)
+#1                data_bottom_red_early = np.concatenate((data_bottom_red_early, \
+#1                                   np.expand_dims(data_early,axis=1)),axis=1)
+#1                data_bottom_red_mid = np.concatenate((data_bottom_red_mid, \
+#1                                    np.expand_dims(data_mid,axis=1)),axis=1)
                 data_bottom_red_late = np.concatenate((data_bottom_red_late, \
                                     np.expand_dims(data_late,axis=1)),axis=1)
            
@@ -175,10 +182,10 @@ def cascade(
     if request_2nd:
         data_set_rhs_3_min_red = np.amin(data_set_rhs_3_red,1)
         data_set_rhs_3_max_red = np.amax(data_set_rhs_3_red,1)
-        data_bottom_min_red_early = np.amin(data_bottom_red_early,1)
-        data_bottom_max_red_early = np.amax(data_bottom_red_early,1)
-        data_bottom_min_red_mid = np.amin(data_bottom_red_mid,1)
-        data_bottom_max_red_mid = np.amax(data_bottom_red_mid,1)
+#1        data_bottom_min_red_early = np.amin(data_bottom_red_early,1)
+#1        data_bottom_max_red_early = np.amax(data_bottom_red_early,1)
+#1        data_bottom_min_red_mid = np.amin(data_bottom_red_mid,1)
+#1        data_bottom_max_red_mid = np.amax(data_bottom_red_mid,1)
         data_bottom_min_red_late = np.amin(data_bottom_red_late,1)
         data_bottom_max_red_late = np.amax(data_bottom_red_late,1)
  
@@ -262,10 +269,10 @@ def cascade(
     ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_bottom_min_gray, data_bottom_max_gray, color="blue", alpha = 0.3)
     if request_2nd: 
-        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_bottom_min_red_early, data_bottom_max_red_early, color="red", alpha = 0.3)
-        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_bottom_min_red_mid, data_bottom_max_red_mid, color="red", alpha = 0.3)
+#1        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
+#1             data_bottom_min_red_early, data_bottom_max_red_early, color="red", alpha = 0.3)
+#1        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
+#1             data_bottom_min_red_mid, data_bottom_max_red_mid, color="red", alpha = 0.3)
         ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_bottom_min_red_late, data_bottom_max_red_late, color="red", alpha = 0.3)
     if stats_available:
