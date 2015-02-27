@@ -3,7 +3,7 @@
 # 
 # Cascade plots 
 #
-# February - October, 2014
+# February, 2014 - February, 2015
 #
 # Python 2.7
 # Dependencies & libraries that need to be installed:
@@ -27,6 +27,7 @@ def cascade(
             data_type_list,             #list of data_types associated with file names
             breadth_str,                #scenarios to gray-shade on top of main scenario
             breadth_str_2nd,            #second set of scenarios, to be red-shaaded
+            breadth_str_3rd,            #third set of scenarios, to be green-shaaded
             data_type = 'stream',       #the type of data
             flood_Q_available = False,  #whether the flood level is available
             Display = False,            #whether the graph is to be displayed(True) or saved as a PNG file(False)
@@ -55,11 +56,15 @@ def cascade(
     
     np.set_printoptions(precision=3) 
     
-    # This checks to see if there is anything in the second breadth column:
+    # This checks to see if there is anything in the second & third breadth columns:
     if isinstance(breadth_str_2nd, unicode):
          request_2nd = True
     else:
         request_2nd = False
+    if isinstance(breadth_str_3rd, unicode):
+        request_3rd = True
+    else:
+        request_3rd = False
         
     # Generate list of model runs to be gray-shaded, and place comparitor into
     # first slot in that list.
@@ -79,6 +84,15 @@ def cascade(
         breadth_2nd_collection = collections.Counter(breadth_2nd)
         breadth_all_collection = (breadth_collection - breadth_2nd_collection) +\
             breadth_2nd_collection
+    
+    if request_3rd:
+        breadth_str_3rd = breadth_str_3rd.replace(" ","")
+        breadth_str_3rd = breadth_str_3rd.replace(primary+",","").replace(","+primary,"") #remove primary
+        breadth_str_3rd = primary + ',' + breadth_str_3rd #place primary in first slot
+        breadth_3rd = breadth_str_3rd.split(",")  # breadth_2nd is list of model runs that will be red-shaded.
+        breadth_3rd_collection = collections.Counter(breadth_3rd)
+        breadth_all_collection = (breadth_collection - breadth_2nd_collection - breadth_3rd_collection) +\
+            breadth_2nd_collection + breadth_3rd_collection
     
     file_model_csv_list = [file_model_csv.replace(primary, Case) for Case in breadth_all_collection]
     file_model_csv_w_path_list = [cst.path_data + file_model_csv.replace(primary, Case) for Case in breadth_all_collection]
@@ -159,6 +173,18 @@ def cascade(
                 data_bottom_red_late = np.concatenate((data_bottom_red_late, \
                                     np.expand_dims(data_late,axis=1)),axis=1)
            
+        if request_3rd and Case in breadth_3rd_collection:
+            try:
+                 data_set_rhs_3_green
+            except NameError:
+                data_set_rhs_3_green = np.expand_dims(data_set_rhs_3,axis=1)
+                data_bottom_green_late = np.expand_dims(data_late,axis=1)
+            else:
+                data_set_rhs_3_green = np.concatenate((data_set_rhs_3_green, \
+                                    np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
+                data_bottom_green_late = np.concatenate((data_bottom_green_late, \
+                                    np.expand_dims(data_late,axis=1)),axis=1)
+           
         if Case == primary: 
             graph_name = graph_name_tmp
             graph_title = cst.metadata.define_model_run(file_model_csv)[0]
@@ -188,6 +214,12 @@ def cascade(
 #1        data_bottom_max_red_mid = np.amax(data_bottom_red_mid,1)
         data_bottom_min_red_late = np.amin(data_bottom_red_late,1)
         data_bottom_max_red_late = np.amax(data_bottom_red_late,1)
+ 
+    if request_3rd:
+        data_set_rhs_3_min_green = np.amin(data_set_rhs_3_green,1)
+        data_set_rhs_3_max_green = np.amax(data_set_rhs_3_green,1)
+        data_bottom_min_green_late = np.amin(data_bottom_green_late,1)
+        data_bottom_max_green_late = np.amax(data_bottom_green_late,1)
  
     data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
         data_early, data_mid, data_late, \
@@ -274,7 +306,10 @@ def cascade(
 #1        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
 #1             data_bottom_min_red_mid, data_bottom_max_red_mid, color="red", alpha = 0.3)
         ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_bottom_min_red_late, data_bottom_max_red_late, color="red", alpha = 0.3)
+             data_bottom_min_red_late, data_bottom_max_red_late, color="red", alpha = 0.7)
+    if request_3rd: 
+        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
+             data_bottom_min_green_late, data_bottom_max_green_late, color="green", alpha = 0.3)
     if stats_available:
         ax4.plot(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              movingaverage(
@@ -444,6 +479,8 @@ def cascade(
     #   Prep the fifth plot (3nd strip chart, right)         #
     ##########################################################
 
+    line_shade = "0.1"
+
     if plot_structure == '4 by 2':
         ax5 = fig.add_subplot(gs2[0,3], aspect = 'auto', sharey=ax)
     else:
@@ -464,7 +501,7 @@ def cascade(
        data_type == 'tot_damdiff' or\
        data_type == 'creek_sums':
         
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if data_type != 'tot_damdiff':
             if SI:
                 plt.xlabel('$Avg \, Q$ [m$^{\t{3}}$/s]', fontsize = 14)
@@ -478,7 +515,7 @@ def cascade(
         
     elif data_type == 'pool':
         
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Avg \, \Delta \, Pool \, Ht$ [m]', fontsize = 14)
         else:
@@ -486,7 +523,7 @@ def cascade(
             
     elif data_type == 'temperature':
         
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Avg \, T$ [$^{\circ}\mathrm{C}$]', fontsize = 14)
         else:
@@ -494,7 +531,7 @@ def cascade(
             
     elif data_type == 'snow':
         
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Ann$ [mm]', fontsize = 14)
         else:
@@ -502,17 +539,20 @@ def cascade(
         
     elif data_type == 'swe_pre':
         
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         plt.xlabel('\n$Max\,Late-season \,SWE/Precip$ [-]', fontsize = 14)
         
     elif data_type == 'precipitation':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
         data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
         data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
         if request_2nd:
             data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
             data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+        if request_3rd:
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
 
         if SI:
             plt.xlabel('$Precip$ [mm]', fontsize = 14)
@@ -521,12 +561,15 @@ def cascade(
     
     elif data_type == 'irrigation':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
         data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
         data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
         if request_2nd:
             data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
             data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+        if request_3rd:
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
             
         if SI:
             plt.xlabel('$Tot \, Ann \, Irrig\,$\n[million m$^3$]', fontsize = 14)
@@ -536,7 +579,7 @@ def cascade(
     elif data_type == 'tot_extract' or\
          data_type == 'tot_consumed':
 
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Avg \, Extract\,$\n[m$^3$/s]', fontsize = 14)
         else:
@@ -544,12 +587,12 @@ def cascade(
 
     elif data_type == 'CWDtoD':
 
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         plt.xlabel('$Avg Fraction$\n[-]', fontsize = 14)
 
     elif data_type == 'unsat_demand':
 
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Avg \, Unsat\,$\n[m$^3$/s]', fontsize = 14)
         else:
@@ -557,7 +600,7 @@ def cascade(
 
     elif data_type == 'aridity':
 
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Aridity \,Idx$\n[-]', fontsize = 14)
         else:
@@ -565,12 +608,15 @@ def cascade(
 
     elif data_type == 'municipal':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
         data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
         data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
         if request_2nd:
             data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
             data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+        if request_3rd:
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
             
         if SI:
             plt.xlabel('$Tot \, Ann \, Mncpl\,$\n[million m$^3$]', fontsize = 14)
@@ -579,12 +625,15 @@ def cascade(
 
     elif data_type == 'water_rights':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
         data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
         data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
         if request_2nd:
             data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
             data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+        if request_3rd:
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
             
         if SI:
             plt.xlabel('$Tot \, Unxczd \, Wtr\, Rt\,$\n[million m$^3$]', fontsize = 14)
@@ -595,12 +644,15 @@ def cascade(
          data_type == 'for_et' or\
          data_type == 'ag_et':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
         data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
         data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
         if request_2nd:
             data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
             data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+        if request_3rd:
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
             
         if SI:
             plt.xlabel('$Tot \, ET$ [mm]', fontsize = 14)
@@ -611,7 +663,7 @@ def cascade(
          data_type == 'for_potet' or\
          data_type == 'ag_potet':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
         data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
         data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
         if request_2nd:
@@ -625,7 +677,7 @@ def cascade(
 
     elif data_type == 'water_deficit':
 
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         if SI:
             plt.xlabel('$Tot \, WD$ [mm]', fontsize = 14)
         else:
@@ -633,14 +685,17 @@ def cascade(
     
     elif data_type == 'h_drought':
 
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color="0.35", lw=1.5)
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         plt.xlabel('$Tot \, DD$ [d/y]', fontsize = 14)
     
     ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_gray, 
                       data_set_rhs_3_max_gray, color="blue", alpha = 0.3)
     if request_2nd:
         ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_red, 
-                      data_set_rhs_3_max_red, color="red", alpha = 0.3)
+                      data_set_rhs_3_max_red, color="red", alpha = 0.7)
+    if request_3rd:
+        ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_green, 
+                      data_set_rhs_3_max_green, color="green", alpha = 0.3)
         
     xloc = plt.MaxNLocator(max_xticks)
     ax5.xaxis.set_major_locator(xloc)
@@ -1660,6 +1715,7 @@ stats_available_v = cascade_plot_params.sheet_by_index(0).col_values(8)[1:]     
 SI_v = cascade_plot_params.sheet_by_index(0).col_values(9)[1:]                  # Metric or standard units
 breadth_v = cascade_plot_params.sheet_by_index(0).col_values(10)[1:]            # Breadth of simulations to create gray-scale
 breadth_2nd_v = cascade_plot_params.sheet_by_index(0).col_values(11)[1:]        # Breadth of simulations to create gray-scale
+breadth_3rd_v = cascade_plot_params.sheet_by_index(0).col_values(12)[1:]        # Breadth of simulations to create gray-scale
 
 flood_Q[:] = [element*cst.cfs_to_m3 for element in flood_Q]   # convert flood_Q from cfs to m3/s
 
@@ -1693,6 +1749,7 @@ for AltScenario in AltScenarioList:
                 list(data_type_v),
                 breadth_str = breadth_v[plot_number],
                 breadth_str_2nd = breadth_2nd_v[plot_number],
+                breadth_str_3rd = breadth_3rd_v[plot_number],
                 Display = Display_v[plot_number],
                 data_type = data_type_v[plot_number],
                 flood_Q_available = flood_Q_available_v[plot_number],
