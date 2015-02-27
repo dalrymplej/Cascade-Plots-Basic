@@ -249,8 +249,9 @@ def cascade(
     else:
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white',(0.9,0.1,0.1)],256)
         
-    fig = plt.figure(1, figsize=(12,8))
-    width_ratios=[3.5, 1.1, 1.1, 1.1]
+    fig = plt.figure(1, figsize=(10,7.5))
+#    fig = plt.figure(1, figsize=(12,8))
+    width_ratios=[3.5, 1.1, 1.1, 2.]
     height_ratios = [4., 1.5]
     wspace = 0.1     # horizontal space btwn figs
     hspace = 0.08     # vertical space btwn figs
@@ -261,11 +262,10 @@ def cascade(
                                 height_ratios=height_ratios,
                                 wspace = wspace)
     elif plot_structure == '3 by 2':
-        gs1 = gridspec.GridSpec(2, 2, width_ratios=width_ratios,
+        gs1 = gridspec.GridSpec(2, 3, width_ratios=width_ratios,
                                 height_ratios=height_ratios, 
                                 wspace = wspace)
-        
-    gs1.update(left=0.1, right = 1.1, wspace=wspace, hspace = hspace)
+    gs1.update(left=0.1, right = 1.1, wspace=wspace, hspace = hspace)  
     
     ##########################################################
     #   Prep the first plot (cascade)                        #
@@ -349,7 +349,7 @@ def cascade(
         gs2 = gridspec.GridSpec(2, 4, width_ratios=width_ratios,
                                 height_ratios=height_ratios)
     elif plot_structure == '3 by 2':
-        gs2 = gridspec.GridSpec(2, 3, width_ratios=width_ratios,
+        gs2 = gridspec.GridSpec(2, 3, width_ratios=[width_ratios[i] for i in [0,1,3]],
                                 height_ratios=height_ratios)
         
     gs2.update(left=0.35, right = 0.94, wspace=wspace, hspace = hspace)
@@ -710,7 +710,7 @@ def cascade(
     textstr = 'Willamette Water 2100\n'+cst.metadata.model_run + \
               '\n\n' + ' Graph generated on ' + str(datetime.date.today()) +\
               '\n\n' + ' File: ' + file_title +\
-              '\n\n' + ' Data generated on ' + timetool.ctime(os.path.getctime(file_model_csv_w_path))
+              '\n\n' + ' Data downloaded on ' + timetool.ctime(os.path.getctime(file_model_csv_w_path))
     if error_check: textstr = textstr + '\n\n' + 'Mass balance error = ' + mass_balance_err_str
     if data_type == 'h_drought': textstr = textstr + '\n\n' +\
     'Hydrological drought as defined in $Prudhomme \, et \, al., \, PNAS$, 2013.'
@@ -1226,7 +1226,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         extra = np.median(swe_apr1[-9:])
         swe_apr1_decadal = np.reshape(np.append(swe_apr1, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = swe_apr1_decadal
-                
+
     elif data_type == 'irrigation':
         irigation_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
         if SI: irigation_data = irigation_data*86400./1.e6  # convert from m3/s to millions of m3
