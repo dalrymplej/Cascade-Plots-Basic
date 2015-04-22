@@ -906,8 +906,11 @@ def collect_data( \
          data_type == 'for_et' or\
          data_type == 'ag_et': 
         time = data_v[:,0]
-        if data_type != 'ag_et': data_yr = data_v[:,2]
-        if data_type == 'ag_et': data_yr = data_v[:,3]
+        if data_type != 'ag_et': data_yr = data_v[:,1]
+        if data_type == 'ag_et': 
+            data_yr = data_v[:,3]
+            print 'reading ag et data on column [3].  Is this right?' 
+            print 'line 911 of Cascade-Plotsv1.01.py'
         if not SI:
             data_yr = data_yr/cst.in_to_mm
         graph_name = file_model_csv[:-4] 
@@ -1013,7 +1016,7 @@ def collect_data( \
 #                "Daily_WaterMaster_Metrics", "Willamette_at_Portland_(m3_s)"
 #                ), delimiter=',',skip_header=1)) # Read csv file
             data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-                "AltWM_Daily_Metrics", "Willamette_at_Portland_(m3_s)"
+                "AltWaterMaster_Daily_Metrics", "Willamette_at_Portland_(m3_s)"
                 ), delimiter=',',skip_header=1)) # Read csv file
             data_yr = data_yr/data_tmp[:,1]
             graph_name = file_model_csv[:-4] + '_tot consump use rel to Willamette'
@@ -1033,7 +1036,7 @@ def collect_data( \
 #            "ET_by_Elevation_(mm)", "Daily_WaterMaster_Metrics"
 #            ), delimiter=',',skip_header=1)) # Read csv file
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "ET_by_Elevation_(mm)", "AltWM_Daily_Metrics"
+            "ET_by_Elevation_(mm)", "AltWaterMaster_Daily_Metrics"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_irrig = np.add(data_tmp[:,2], data_tmp[:,3])
         
