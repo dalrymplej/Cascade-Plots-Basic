@@ -906,11 +906,14 @@ def collect_data( \
          data_type == 'for_et' or\
          data_type == 'ag_et': 
         time = data_v[:,0]
-        if data_type != 'ag_et': data_yr = data_v[:,1]
         if data_type == 'ag_et': 
             data_yr = data_v[:,3]
             print 'reading ag et data on column [3].  Is this right?' 
             print 'line 911 of Cascade-Plotsv1.01.py'
+        elif data_type == 'precipitation': 
+            data_yr = data_v[:,2]
+        else: 
+            data_yr = data_v[:,1]
         if not SI:
             data_yr = data_yr/cst.in_to_mm
         graph_name = file_model_csv[:-4] 
