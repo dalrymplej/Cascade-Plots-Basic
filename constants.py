@@ -62,6 +62,7 @@ seconds_in_day = 86400.
 days_in_15_yrs = 15*365
 days_in_30_yrs = 30*365
 days_in_60_yrs = 60*365
+million_peryr_factor = 365*86400/1.e6
 
 def paths():
     import xlrd

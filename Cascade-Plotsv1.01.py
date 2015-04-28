@@ -560,16 +560,15 @@ def cascade(
             plt.xlabel('$Precip$ [in]', fontsize = 14)
     
     elif data_type == 'irrigation':
-
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
-        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
-        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
+        ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
+        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
+        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
         if request_2nd:
-            data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
-            data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+            data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
+            data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
         if request_3rd:
-            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
-            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
             
         if SI:
             plt.xlabel('$Tot \, Ann \, Irrig\,$\n[million m$^3$]', fontsize = 14)
@@ -608,15 +607,15 @@ def cascade(
 
     elif data_type == 'municipal':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
-        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
-        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
+        ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
+        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
+        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
         if request_2nd:
-            data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
-            data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+            data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
+            data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
         if request_3rd:
-            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
-            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
             
         if SI:
             plt.xlabel('$Tot \, Ann \, Mncpl\,$\n[million m$^3$]', fontsize = 14)
@@ -625,15 +624,15 @@ def cascade(
 
     elif data_type == 'water_rights':
 
-        ax5.plot(data_set_rhs_3*365., range(start_year,end_year), color=line_shade, lw=1.5)
-        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*365.
-        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*365.
+        ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
+        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
+        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
         if request_2nd:
-            data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
-            data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+            data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
+            data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
         if request_3rd:
-            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
-            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
             
         if SI:
             plt.xlabel('$Tot \, Unxczd \, Wtr\, Rt\,$\n[million m$^3$]', fontsize = 14)
@@ -669,6 +668,9 @@ def cascade(
         if request_2nd:
             data_set_rhs_3_min_red = data_set_rhs_3_min_red*365.
             data_set_rhs_3_max_red = data_set_rhs_3_max_red*365.
+        if request_3rd:
+            data_set_rhs_3_min_green = data_set_rhs_3_min_green*365.
+            data_set_rhs_3_max_green = data_set_rhs_3_max_green*365.
             
         if SI:
             plt.xlabel('$Tot \, PET$ [mm]', fontsize = 14)
@@ -1247,7 +1249,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         irigation_data_decadal = np.reshape(np.append(irigation_data, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = irigation_data_decadal
         
-    if data_type == 'tot_extract':
+    elif data_type == 'tot_extract':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -1259,7 +1261,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
-    if data_type == 'tot_consumed' or 'CWDtoD':
+    elif data_type == 'tot_consumed' or data_type == 'CWDtoD':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -1271,7 +1273,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
-    if data_type == 'unsat_demand':
+    elif data_type == 'unsat_demand':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -1308,7 +1310,6 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         extra = np.median(municipal_data[-9:])
         municipal_data_decadal = np.reshape(np.append(municipal_data, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = municipal_data_decadal
-        
     elif data_type == 'water_rights':
         unusedWR_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
         if SI: unusedWR_data = unusedWR_data*86400./1.e6  # convert from m3/s to millions of m3
@@ -1396,7 +1397,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
             yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
             window)[averaging_window:-averaging_window]
         data_set_rhs_3 = yearly_max
-    
+   
     return data_set_rhs_1, data_set_rhs_2, data_set_rhs_3
     
 
