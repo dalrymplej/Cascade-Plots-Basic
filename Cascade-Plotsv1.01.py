@@ -930,7 +930,7 @@ def collect_data( \
         time = data_v[:,0]
         data_swe = data_v[:,1]
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "Snow_(mm)", "Climate"
+            "HBV_Snow_(mm)_by_elev_0-500-1200", "HBV_Climate_by_elev_0-200-1200"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_pre = data_tmp[:,1]
         
@@ -1038,15 +1038,15 @@ def collect_data( \
         time = data_v[:,0]
         data_pet = data_v[:,2]
 #        data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-#            "ET_by_Elevation_(mm)", "Daily_WaterMaster_Metrics"
+#            "HBV_ET_(mm)_by_elev_0-200-1200_Ref_Run0", "Daily_WaterMaster_Metrics"
 #            ), delimiter=',',skip_header=1)) # Read csv file
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "ET_by_Elevation_(mm)", "AltWaterMaster_Daily_Metrics"
+            "HBV_ET_(mm)_by_elev_0-200-1200", "AltWaterMaster_Daily_Metrics"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_irrig = np.add(data_tmp[:,2], data_tmp[:,3])
         
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "ET_by_Elevation_(mm)", "Climate"
+            "HBV_ET_(mm)_by_elev_0-200-1200", "HBV_Climate_by_elev_0-200-1200"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_precip = data_tmp[:,2]
         
@@ -1102,12 +1102,12 @@ def collect_data( \
         error_check = True
         data_spQ = data_yr / cst.Willamette_Basin_area_at_PDX * 86400.  #m in each day
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "Willamette_at_Portland_(m3_s)", "ET_by_Elevation_(mm)"
+            "Willamette_at_Portland_(m3_s)", "HBV_ET_(mm)_by_elev_0-200-1200"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_ET = data_tmp[:,1]/1000.
         
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "Willamette_at_Portland_(m3_s)", "Climate"
+            "Willamette_at_Portland_(m3_s)", "HBV_Climate_by_elev_0-200-1200"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_precip = data_tmp[:,2]/1000.
         Basin_spQ_sum = np.sum(data_spQ)/len(data_spQ)*365.          # avg specific discharge each year
