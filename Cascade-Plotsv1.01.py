@@ -362,6 +362,11 @@ def cascade(
     ##########################################################
  
     ax2 = fig.add_subplot(gs2[0,1], aspect = 'auto', sharey=ax)
+    print data_set_rhs_1
+    print np.shape(data_set_rhs_1)
+    print np.size(data_set_rhs_1)
+    print type(data_set_rhs_1)
+    assert False
     BoxPlot(ax2, data_set_rhs_1)
     xloc = plt.MaxNLocator(max_xticks)
     ax2.xaxis.set_major_locator(xloc)
