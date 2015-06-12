@@ -47,7 +47,7 @@ def cascade(
     import datetime
     import time as timetool, os.path
     import matplotlib as mpl
-    import constants as cst   # constants.py contains constants used here
+    import constants_cp as cst   # constants.py contains constants used here
     import matplotlib.gridspec as gridspec
     from   mpl_toolkits.axes_grid1 import make_axes_locatable
     import metadata as md
@@ -306,7 +306,7 @@ def cascade(
 #1        ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
 #1             data_bottom_min_red_mid, data_bottom_max_red_mid, color="red", alpha = 0.3)
         ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
-             data_bottom_min_red_late, data_bottom_max_red_late, color="red", alpha = 0.7)
+             data_bottom_min_red_late, data_bottom_max_red_late, color="red", alpha = 0.3)
     if request_3rd: 
         ax4.fill_between(range(cst.day_of_year_oct1, 365 + cst.day_of_year_oct1),
              data_bottom_min_green_late, data_bottom_max_green_late, color="green", alpha = 0.3)
@@ -761,7 +761,7 @@ def collect_data( \
     
     import numpy as np
     import xlrd
-    import constants as cst   # constants.py contains constants used here
+    import constants_cp as cst   # constants.py contains constants used here
     from movingaverage import movingaverage
     from compare import compare_rows
     
@@ -1204,7 +1204,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
     """
 
     import numpy as np
-    import constants as cst   # constants.py contains constants used here
+    import constants_cp as cst   # constants.py contains constants used here
     from movingaverage import movingaverage, n_take_k
 
     ##########################################################
@@ -1709,7 +1709,7 @@ def AltScenName(file_model_csv):
 #   stats_available = False (default), True
 #   SI = True (default), False
 
-import constants as cst   # constants.py contains constants used here
+import constants_cp as cst   # constants.py contains constants used here
 import xlrd
 
 # Read a parameter file in xls format.
