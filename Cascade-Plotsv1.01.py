@@ -125,7 +125,7 @@ def cascade(
                 data_type, data_type_list, SI,\
                 start_year, end_year
                 )
-
+        
         data_early, data_mid, data_late, window, averaging_window \
             = process_bottom_strip(
                 data_2D, data_yr, num_water_yrs, data_length, \
@@ -362,11 +362,6 @@ def cascade(
     ##########################################################
  
     ax2 = fig.add_subplot(gs2[0,1], aspect = 'auto', sharey=ax)
-    print data_set_rhs_1
-    print np.shape(data_set_rhs_1)
-    print np.size(data_set_rhs_1)
-    print type(data_set_rhs_1)
-    assert False
     BoxPlot(ax2, data_set_rhs_1)
     xloc = plt.MaxNLocator(max_xticks)
     ax2.xaxis.set_major_locator(xloc)
@@ -446,7 +441,7 @@ def cascade(
             flood_Q_line = np.ones(90) * flood_Q
             plt.plot(flood_Q_line, np.append(np.array(y),2100), 'r-', lw=1.)
             textstr2 = 'Flood stage'
-            props2 = dict(boxstyle='round', facecolor='w', alpha=0.5, lw=0)
+            props2 = dict(boxstyle='round', facecolor='w', alpha=0.3, lw=0)
             ax3.text(0.45, 0.31, textstr2, color='r', transform=ax3.transAxes,
                      fontsize=12, verticalalignment='top', bbox=props2, rotation = 'vertical')
             
@@ -699,7 +694,7 @@ def cascade(
                       data_set_rhs_3_max_gray, color="blue", alpha = 0.3)
     if request_2nd:
         ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_red, 
-                      data_set_rhs_3_max_red, color="red", alpha = 0.7)
+                      data_set_rhs_3_max_red, color="red", alpha = 0.5)
     if request_3rd:
         ax5.fill_betweenx(range(start_year,end_year), data_set_rhs_3_min_green, 
                       data_set_rhs_3_max_green, color="green", alpha = 0.3)
@@ -1228,6 +1223,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
        data_type == 'tot_damin' or \
        data_type == 'tot_damout' or\
        data_type == 'tot_damdiff' or\
+       data_type == 'pool' or\
        data_type == 'creek_sums':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
