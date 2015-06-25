@@ -55,6 +55,7 @@ in_to_mm = 25.4         #Inches to milimeters
 acft_to_m3 = 1233.48
 acftperday_to_m3s = acft_to_m3/86400.
 acre_to_m2 = 4046.86
+ft_to_m = 0.3048
 Willamette_Basin_area = 29728.*1.e6  # m2
 Willamette_Basin_area_at_PDX = 11200.*math.pow(5280.*.3048,2) #11200 sq mi @ PDX
 seconds_in_yr = 86400.*365.25
