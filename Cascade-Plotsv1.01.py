@@ -823,21 +823,24 @@ def collect_data( \
     elif data_type == 'pool_indiv':
         time = data_v[:,0]
         data_yr = data_v[:,1]
-        if  'Lookout_Point'  in file_model_csv: max_cons_pool = np.ones_like(data_yr)* 926. *cst.ft_to_m
-        elif 'Detroit'       in file_model_csv: max_cons_pool = np.ones_like(data_yr)*1563. *cst.ft_to_m
-        elif 'Foster'        in file_model_csv: max_cons_pool = np.ones_like(data_yr)*637. *cst.ft_to_m
-        elif 'Green_Peter'   in file_model_csv: max_cons_pool = np.ones_like(data_yr)*1010. *cst.ft_to_m
-        elif 'Blue_River'    in file_model_csv: max_cons_pool = np.ones_like(data_yr)*1350. *cst.ft_to_m
-        elif 'Cougar'        in file_model_csv: max_cons_pool = np.ones_like(data_yr)*1690. *cst.ft_to_m
-        elif 'Fern_Ridge'    in file_model_csv: max_cons_pool = np.ones_like(data_yr)* 373.5*cst.ft_to_m
-        elif 'Cottage_Grove' in file_model_csv: max_cons_pool = np.ones_like(data_yr)* 790. *cst.ft_to_m
-        elif 'Dorena'        in file_model_csv: max_cons_pool = np.ones_like(data_yr)* 832. *cst.ft_to_m
-        elif 'Fall_Creek'    in file_model_csv: max_cons_pool = np.ones_like(data_yr)* 830. *cst.ft_to_m
-        elif 'Hills_Creek'   in file_model_csv: max_cons_pool = np.ones_like(data_yr)*1541. *cst.ft_to_m
+        #  max conservation pool values from USACE SOPs 
+        if  'Lookout_Point'  in file_model_csv: max_cons_pool_SOP = 926.  *cst.ft_to_m
+        elif 'Detroit'       in file_model_csv: max_cons_pool_SOP = 1563. *cst.ft_to_m
+        elif 'Foster'        in file_model_csv: max_cons_pool_SOP = 637.  *cst.ft_to_m
+        elif 'Green_Peter'   in file_model_csv: max_cons_pool_SOP = 1010. *cst.ft_to_m
+        elif 'Blue_River'    in file_model_csv: max_cons_pool_SOP = 1350. *cst.ft_to_m
+        elif 'Cougar'        in file_model_csv: max_cons_pool_SOP = 1690. *cst.ft_to_m
+        elif 'Fern_Ridge'    in file_model_csv: max_cons_pool_SOP = 373.5 *cst.ft_to_m
+        elif 'Cottage_Grove' in file_model_csv: max_cons_pool_SOP =  790. *cst.ft_to_m
+        elif 'Dorena'        in file_model_csv: max_cons_pool_SOP =  832. *cst.ft_to_m
+        elif 'Fall_Creek'    in file_model_csv: max_cons_pool_SOP =  830. *cst.ft_to_m
+        elif 'Hills_Creek'   in file_model_csv: max_cons_pool_SOP = 1541. *cst.ft_to_m
         else: 
             print 'file name does not match reservoir programming for pool_indiv code'
             print file_model_csv
             assert False
+        max_cons_pool_SOP = np.min([max_cons_pool_SOP,np.max(data_yr[366:])])  #Take maximum conservation pool as larger of v
+        max_cons_pool = np.ones_like(data_yr)*max_cons_pool_SOP
         data_yr = data_yr - max_cons_pool
         if not SI: data_yr = data_yr/cst.ft_to_m
         graph_name = file_model_csv[:-4] + '_reservoir_pool'
