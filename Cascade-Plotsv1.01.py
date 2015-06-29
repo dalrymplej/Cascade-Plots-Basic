@@ -138,21 +138,10 @@ def cascade(
               data_set_rhs_3_gray
             except NameError:
                 data_set_rhs_3_gray = np.expand_dims(data_set_rhs_3,axis=1)
-#1                data_bottom_gray = np.column_stack((data_early,
-#1                                                      data_mid,
-#1                                                      data_late))
-#1                data_bottom_gray = np.column_stack(data_late)
                 data_bottom_gray = np.expand_dims(data_late,axis=1)
             else:
                 data_set_rhs_3_gray = np.concatenate((data_set_rhs_3_gray, \
                                     np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
-#1                data_bottom_gray = np.concatenate((data_bottom_gray, 
-#1                                                   np.column_stack((data_early,
-#1                                                      data_mid,
-#1                                                      data_late))),axis=1)
-#1                data_bottom_gray = np.concatenate((data_bottom_gray, 
-#1                                                   np.column_stack((
-#1                                                      data_late))),axis=1)
                 data_bottom_gray = np.concatenate((data_bottom_gray, \
                                     np.expand_dims(data_late,axis=1)),axis=1)
         if request_2nd and Case in breadth_2nd_collection:
@@ -160,16 +149,10 @@ def cascade(
                  data_set_rhs_3_red
             except NameError:
                 data_set_rhs_3_red = np.expand_dims(data_set_rhs_3,axis=1)
-#1                data_bottom_red_early = np.expand_dims(data_early,axis=1)
-#1                data_bottom_red_mid = np.expand_dims(data_mid,axis=1)
                 data_bottom_red_late = np.expand_dims(data_late,axis=1)
             else:
                 data_set_rhs_3_red = np.concatenate((data_set_rhs_3_red, \
                                     np.expand_dims(data_set_rhs_3,axis=1)),axis=1)
-#1                data_bottom_red_early = np.concatenate((data_bottom_red_early, \
-#1                                   np.expand_dims(data_early,axis=1)),axis=1)
-#1                data_bottom_red_mid = np.concatenate((data_bottom_red_mid, \
-#1                                    np.expand_dims(data_mid,axis=1)),axis=1)
                 data_bottom_red_late = np.concatenate((data_bottom_red_late, \
                                     np.expand_dims(data_late,axis=1)),axis=1)
            
@@ -197,6 +180,7 @@ def cascade(
             = data_set_rhs_1, data_set_rhs_2, data_set_rhs_3, \
                 data_early, data_mid, data_late, \
                 data_2D, data_2D_clipped 
+            pass
                 
         inum += 1
              
@@ -396,14 +380,18 @@ def cascade(
     elif data_type == 'tot_extract' or \
        data_type == 'aridity' or\
        data_type == 'unsat_demand' or\
-       data_type == 'tot_consumed' or\
-       data_type == 'CWDtoD':
+       data_type == 'tot_consumed':
         plt.xlabel('$Min\,$', fontsize = 14)
+
+    elif data_type == 'instream' or \
+        data_type == 'CWDtoD':
+            plt.xlabel('$Max\,$', fontsize = 14)
 
     elif data_type == 'swe_pre' or data_type == 'aridity':
         plt.xlabel('$Apr \, 1\, SWE:Pre$', fontsize = 14)
 
-    elif data_type == 'municipal':
+    elif data_type == 'municipal' or data_type == 'muni_alloc_big4' or \
+        data_type == 'muni_less_disch' or data_type == 'muni_less_disch_big4':
         plt.xlabel('$Tot \, Ann \, Mncpl\,$', fontsize = 14)
 
     elif data_type == 'water_rights':
@@ -471,8 +459,7 @@ def cascade(
         elif data_type == 'tot_extract' or\
              data_type == 'aridity' or\
              data_type == 'unsat_demand' or\
-             data_type == 'tot_consumed' or\
-             data_type == 'CWDtoD':
+             data_type == 'tot_consumed':
             plt.xlabel('$Max \,$', fontsize = 14)
 
     ##########################################################
@@ -560,20 +547,29 @@ def cascade(
             plt.xlabel('$Precip$ [in]', fontsize = 14)
     
     elif data_type == 'irrigation':
-        ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
-        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
-        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
-        if request_2nd:
-            data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
-            data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
-        if request_3rd:
-            data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
-            data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
-            
         if SI:
             plt.xlabel('$Tot \, Ann \, Irrig\,$\n[million m$^3$]', fontsize = 14)
+            ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
+            data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
+            data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
+            if request_2nd:
+                data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
+                data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
+            if request_3rd:
+                data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
+                data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
+            
         else:
             plt.xlabel('$Tot \, Ann \, Irrig\,$\n[thousand ac-ft]', fontsize = 14)
+            ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
+            data_set_rhs_3_min_gray = data_set_rhs_3_min_gray
+            data_set_rhs_3_max_gray = data_set_rhs_3_max_gray
+            if request_2nd:
+                data_set_rhs_3_min_red = data_set_rhs_3_min_red
+                data_set_rhs_3_max_red = data_set_rhs_3_max_red
+            if request_3rd:
+                data_set_rhs_3_min_green = data_set_rhs_3_min_green
+                data_set_rhs_3_max_green = data_set_rhs_3_max_green
 
     elif data_type == 'tot_extract' or\
          data_type == 'tot_consumed':
@@ -587,7 +583,16 @@ def cascade(
     elif data_type == 'CWDtoD':
 
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
-        plt.xlabel('$Avg Fraction$\n[-]', fontsize = 14)
+        plt.xlabel('$Avg\, Fraction$\n[-]', fontsize = 14)
+        
+    elif data_type == 'instream':
+        
+        if SI:
+            ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
+            plt.xlabel('$Avg \, Right\,$\n[m$^3$/d]', fontsize = 14)
+        else:
+            ax5.plot(data_set_rhs_3/1000., range(start_year,end_year), color=line_shade, lw=1.5)
+            plt.xlabel('$Avg \, Right\,$\n[thousand ac-ft/d]', fontsize = 14)
 
     elif data_type == 'unsat_demand':
 
@@ -605,22 +610,32 @@ def cascade(
         else:
             plt.xlabel('$Aridity \,Idx$\n[thousand ac-ft]', fontsize = 14)
 
-    elif data_type == 'municipal':
+    elif data_type == 'municipal' or data_type == 'muni_alloc_big4' or \
+        data_type == 'muni_less_disch' or data_type == 'muni_less_disch_big4':
 
-        ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
-        data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
-        data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
-        if request_2nd:
-            data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
-            data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
-        if request_3rd:
-            data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
-            data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
-            
         if SI:
             plt.xlabel('$Tot \, Ann \, Mncpl\,$\n[million m$^3$]', fontsize = 14)
+            ax5.plot(data_set_rhs_3*cst.million_peryr_factor, range(start_year,end_year), color=line_shade, lw=1.5)
+            data_set_rhs_3_min_gray = data_set_rhs_3_min_gray*cst.million_peryr_factor
+            data_set_rhs_3_max_gray = data_set_rhs_3_max_gray*cst.million_peryr_factor
+            if request_2nd:
+                data_set_rhs_3_min_red = data_set_rhs_3_min_red*cst.million_peryr_factor
+                data_set_rhs_3_max_red = data_set_rhs_3_max_red*cst.million_peryr_factor
+            if request_3rd:
+                data_set_rhs_3_min_green = data_set_rhs_3_min_green*cst.million_peryr_factor
+                data_set_rhs_3_max_green = data_set_rhs_3_max_green*cst.million_peryr_factor
+            
         else:
             plt.xlabel('$Tot \, Ann \, Mncpl\,$\n[thousand ac-ft]', fontsize = 14)
+            ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
+            data_set_rhs_3_min_gray = data_set_rhs_3_min_gray
+            data_set_rhs_3_max_gray = data_set_rhs_3_max_gray
+            if request_2nd:
+                data_set_rhs_3_min_red = data_set_rhs_3_min_red
+                data_set_rhs_3_max_red = data_set_rhs_3_max_red
+            if request_3rd:
+                data_set_rhs_3_min_green = data_set_rhs_3_min_green
+                data_set_rhs_3_max_green = data_set_rhs_3_max_green
 
     elif data_type == 'water_rights':
 
@@ -1006,12 +1021,35 @@ def collect_data( \
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_irrigation'
         plot_structure = '3 by 2'
-    elif data_type == 'municipal': 
+    elif data_type == 'municipal' or data_type == 'muni_less_disch': 
         time = data_v[:,0]
         data_yr = np.add(data_v[:,4], data_v[:,5])
+        if data_type == 'muni_less_disch':
+            data_tmp = data_yr
+            data_return = [np.mean(data_tmp[365*i+2:365*i+33]) for i in range(len(data_yr)/365)]  #from Jan 3 to Feb 3
+            data_return = np.repeat(data_return,365) #repeat each element of data_return 365 times.  I.e., fill each row with same number
+            data_yr -= data_return
         if not SI:
             data_yr = data_yr/cst.acftperday_to_m3s
-        graph_name = file_model_csv[:-4] + '_municipal'
+        if data_type == 'municipal':
+            graph_name = file_model_csv[:-4] + '_municipal'
+        elif data_type == 'muni_less_disch':
+            graph_name = file_model_csv[:-4] + '_municipal less muni discharge'            
+        plot_structure = '3 by 2'
+    elif data_type == 'muni_alloc_big4'  or data_type == 'muni_less_disch_big4': 
+        time = data_v[:,0]
+        data_yr = data_v[:,1:5].sum(axis=1)
+        if data_type == 'muni_less_disch_big4':
+            data_tmp = data_yr
+            data_return = [np.mean(data_tmp[365*i+2:365*i+33]) for i in range(len(data_yr)/365)]  #from Jan 3 to Feb 3
+            data_return = np.repeat(data_return,365) #repeat each element of data_return 365 times.  I.e., fill each row with same number
+            data_yr -= data_return
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        if data_type == 'muni_alloc_big4': 
+            graph_name = file_model_csv[:-4] + '_municipal_Big4'
+        elif data_type == 'muni_less_disch_big4':
+            graph_name = file_model_csv[:-4] + '_municipal_less_disch_Big4'
         plot_structure = '3 by 2'
     elif data_type == 'water_rights':
         time = data_v[:,0]
@@ -1028,6 +1066,13 @@ def collect_data( \
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_total water use by people'
         plot_structure = '4 by 2'
+    elif data_type == 'instream': 
+        time = data_v[:,0]
+        data_yr = data_v[:,1]
+        if not SI:
+            data_yr = data_yr/cst.acftperday_to_m3s
+        graph_name = file_model_csv[:-4] + '_instream rights'
+        plot_structure = '3 by 2'
     elif data_type == 'tot_consumed' or data_type == 'CWDtoD':
         time = data_v[:,0]
         data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
@@ -1041,16 +1086,14 @@ def collect_data( \
             data_yr = data_yr/cst.acftperday_to_m3s
         if data_type == 'tot_consumed':
             graph_name = file_model_csv[:-4] + '_total consumptive water use'
+            plot_structure = '4 by 2'
         elif data_type == 'CWDtoD':
-#            data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-#                "Daily_WaterMaster_Metrics", "Willamette_at_Portland_(m3_s)"
-#                ), delimiter=',',skip_header=1)) # Read csv file
             data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
                 "AltWaterMaster_Daily_Metrics", "Willamette_at_Portland_(m3_s)"
                 ), delimiter=',',skip_header=1)) # Read csv file
             data_yr = data_yr/data_tmp[:,1]
             graph_name = file_model_csv[:-4] + '_tot consump use rel to Willamette'
-        plot_structure = '4 by 2'
+            plot_structure = '3 by 2'
     elif data_type == 'unsat_demand':
         time = data_v[:,0]
         data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
@@ -1288,7 +1331,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
-    elif data_type == 'tot_consumed' or data_type == 'CWDtoD':
+    elif data_type == 'tot_consumed':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -1300,6 +1343,21 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
+    elif data_type == 'CWDtoD':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_max_decadal
+
+    elif data_type == 'instream':
+
+        if SI: Q_max = np.array([np.amax(data_2D[i,:]) for i in range(num_water_yrs)])  # max right
+        if not SI: Q_max = np.array([np.amax(data_2D[i,:]/1000.) for i in range(num_water_yrs)])  # max right
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_max_decadal
+               
     elif data_type == 'unsat_demand':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
@@ -1330,10 +1388,12 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         data_set_rhs_1 = swe_apr1_decadal
         yearly_max = [np.max(data_2D[i,61:150]) for i in range(num_water_yrs)]
                     
-    elif data_type == 'municipal':
+    elif data_type == 'municipal' or data_type == 'muni_alloc_big4' or \
+        data_type == 'muni_less_disch' or data_type == 'muni_less_disch_big4':
         municipal_data = np.array([np.sum(data_yr[i*365:(i+1)*365]) for i in range(num_water_yrs)])
         if SI: municipal_data = municipal_data*86400./1.e6  # convert from m3/s to millions of m3
-        if not SI: municipal_data = municipal_data/1.e3  # convert to thousands of ac-ft
+        if not SI: 
+            municipal_data = municipal_data/1.e3  # convert to thousands of ac-ft
         extra = np.median(municipal_data[-9:])
         municipal_data_decadal = np.reshape(np.append(municipal_data, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = municipal_data_decadal
@@ -1419,6 +1479,15 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
             yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
             window)[averaging_window:-averaging_window]
         data_set_rhs_3 = yearly_avg
+        if data_type == 'municipal' or data_type == 'muni_alloc_big4' or data_type == 'irrigation' or \
+           data_type == 'muni_less_disch' or data_type == 'muni_less_disch_big4':        
+            if not SI:
+                data_set_rhs_3 = data_set_rhs_3*365/1000.
+            else:
+                data_set_rhs_3 = data_set_rhs_3*365/1.e6
+        elif data_type == 'instream':
+            if not SI:
+                data_set_rhs_3 = data_set_rhs_3/1000.
     else:  
         yearly_max = movingaverage(
             yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
@@ -1450,17 +1519,17 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
         
         if SI:
             ylabel2 = '$Daily \, Q$ [m$^{\t{3}}$/s]'
-            ylabel4 = '$Discharge (Q)\,$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Discharge\, (Q)\,$ [m$^{\t{3}}$/s]'
         else:
             ylabel2 = '$Daily \, Q$ [cfs]'
-            ylabel4 = '$Discharge (Q)\,$ [cfs]'
+            ylabel4 = '$Discharge\, (Q)\,$ [cfs]'
         if data_type == 'tot_damdiff':
             if SI:
                 ylabel2 = '$Daily \, \Delta Q$ [m$^{\t{3}}$/s]'
-                ylabel4 = '$\Delta Discharge (\Delta Q)\,$ [m$^{\t{3}}$/s]'
+                ylabel4 = '$\Delta\, Discharge (\Delta Q)\,$ [m$^{\t{3}}$/s]'
             else:
                 ylabel2 = '$Daily \, \Delta Q$ [cfs]'
-                ylabel4 = '$Discharge (\Delta Q)\,$ [cfs]'
+                ylabel4 = '$Discharge\, (\Delta Q)\,$ [cfs]'
                   
     elif data_type == 'snow':
         if SI:
@@ -1478,7 +1547,7 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Irrigation \,Rate\,$ [ac-ft/d]'
             ylabel4 = '$Irrig \,Rate\,$ [ac-ft/d]'
         
-    if data_type == 'tot_extract':
+    elif data_type == 'tot_extract':
         if SI:
             ylabel2 = '$Tot \,Extract \,$ [m$^{\t{3}}$/s]'
             ylabel4 = '$Extract\,$ [m$^{\t{3}}$/s]'
@@ -1486,7 +1555,7 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Tot \,Extract \,$ [cfs]'
             ylabel4 = '$Extract\,$ [cfs]'
                   
-    if data_type == 'tot_consumed':
+    elif data_type == 'tot_consumed':
         if SI:
             ylabel2 = '$Tot \,Consump\, Extract \,$ [m$^{\t{3}}$/s]'
             ylabel4 = '$Consump\,$ [m$^{\t{3}}$/s]'
@@ -1494,11 +1563,19 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Tot \,Consump\, Extract \,$ [cfs]'
             ylabel4 = '$Consump,$ [cfs]'
                   
-    if data_type == 'CWDtoD':
-        ylabel2 = '$Frac Extract \,$ [-]'
+    elif data_type == 'CWDtoD':
+        ylabel2 = '$Frac\, Extract \,$ [-]'
         ylabel4 = '$Frac$ [-]'
+
+    elif data_type == 'instream':
+        if SI:
+            ylabel2 = '$Instream\, Rights$ [m$^{\t{3}}$/s]'
+            ylabel4 = '$Instream$ [m$^{\t{3}}$/s]'
+        else:
+            ylabel2 = '$Instream \,Rights$ [ac-ft/d]'
+            ylabel4 = '$Instream$ [ac-ft/d]'
                   
-    if data_type == 'unsat_demand':
+    elif data_type == 'unsat_demand':
         if SI:
             ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
             ylabel4 = '$Uns\,Dmd\,$ [m$^{\t{3}}$/s]'
@@ -1511,16 +1588,17 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
         ylabel4 = '$Aridity$ [-]'
                     
     elif data_type == 'swe_pre':
-        ylabel2 = '$SWE:Precip Ratio$ [-]'
+        ylabel2 = '$SWE:Precip\, Ratio$ [-]'
         ylabel4 = '$SWE:Precip$ [-]'
                     
-    elif data_type == 'municipal':
+    elif data_type == 'municipal' or data_type == 'muni_alloc_big4' or \
+        data_type == 'muni_less_disch' or data_type == 'muni_less_disch_big4':
         if SI:
-            ylabel2 = '$Municipal Use\,$ [m$^3$/s]'
-            ylabel4 = '$Mncpl Use\,$ [m$^3$/s]'
+            ylabel2 = '$Municipal\, Use\,$ [m$^3$/s]'
+            ylabel4 = '$Mncpl\, Use\,$ [m$^3$/s]'
         else:
-            ylabel2 = '$Municipal Use\,$ [ac-ft/d]'
-            ylabel4 = '$Mncpl Use\,$ [ac-ft/d]'
+            ylabel2 = '$Municipal\, Use\,$ [ac-ft/d]'
+            ylabel4 = '$Mncpl\, Use\,$ [ac-ft/d]'
         
     elif data_type == 'water_rights':
         if SI:
