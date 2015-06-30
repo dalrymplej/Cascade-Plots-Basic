@@ -1492,6 +1492,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
             yearly_avg[:averaging_window] + yearly_avg + yearly_avg[-averaging_window:],
             window)[averaging_window:-averaging_window]
         data_set_rhs_3 = yearly_avg*365.
+    
     elif data_type != 'swe_pre' and data_type != 'water_deficit':   ###THIS IS MOST CASES ***
         yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         yearly_avg = movingaverage(
@@ -1507,6 +1508,10 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         elif data_type == 'instream':
             if not SI:
                 data_set_rhs_3 = data_set_rhs_3/1000.
+        elif data_type == 'ratio_min_to_discharge':
+            print 'line 1512' +\
+            'June 30 2015'
+            assert False
     else:  
         yearly_max = movingaverage(
             yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
