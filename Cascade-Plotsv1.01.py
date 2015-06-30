@@ -384,7 +384,7 @@ def cascade(
        data_type == 'tot_consumed':
         plt.xlabel('$Min\,$', fontsize = 14)
     elif data_type == 'ratio_min_to_discharge':
-            plt.xlabel('$Min/Discharge\,$', fontsize = 14)        
+            plt.xlabel('$Max\, Ratio$', fontsize = 14)        
     elif data_type == 'instream' or \
         data_type == 'CWDtoD':
             plt.xlabel('$Max\,$', fontsize = 14)
@@ -589,7 +589,7 @@ def cascade(
 
     elif  data_type == 'ratio_min_to_discharge':
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
-        plt.xlabel('$Min\, 7D\,Ratio$ [-]', fontsize = 14)
+        plt.xlabel('$Max\, Ratio\,$ [-]', fontsize = 14)
         
     elif data_type == 'instream':
         
@@ -1362,6 +1362,13 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
+    elif data_type == 'CWDtoD':
+
+        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_max[-9:])
+        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_max_decadal
+
     elif data_type == 'CWDtoD' or data_type == 'ratio_min_to_discharge':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
@@ -1493,6 +1500,14 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
             window)[averaging_window:-averaging_window]
         data_set_rhs_3 = yearly_avg*365.
     
+    elif data_type == 'ratio_min_to_discharge':
+#        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        yearly_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        yearly_max = movingaverage(
+            yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
+            window)[averaging_window:-averaging_window]
+        data_set_rhs_3 = yearly_max
+        
     elif data_type != 'swe_pre' and data_type != 'water_deficit':   ###THIS IS MOST CASES ***
         yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         yearly_avg = movingaverage(
@@ -1508,10 +1523,6 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         elif data_type == 'instream':
             if not SI:
                 data_set_rhs_3 = data_set_rhs_3/1000.
-        elif data_type == 'ratio_min_to_discharge':
-            print 'line 1512' +\
-            'June 30 2015'
-            assert False
     else:  
         yearly_max = movingaverage(
             yearly_max[:averaging_window] + yearly_max + yearly_max[-averaging_window:],
@@ -1757,7 +1768,7 @@ def BoxPlot(axys, variable):
     col = (0.6, 0.6, 0.6) # light gray in rgb
     positions=range(2015,2096,10)
     box = axys.boxplot(variableT, vert=False,positions=positions,widths=9.2,
-                       whis=2,sym=' ',patch_artist=True)
+                       whis=50,sym=' ',patch_artist=True)
     plt.setp(box['boxes'], color=col)
     colors = [col]*9
     for patch, colors in zip(box['boxes'], colors):
