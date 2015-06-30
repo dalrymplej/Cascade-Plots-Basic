@@ -228,7 +228,8 @@ def cascade(
                     'water_deficit' not in data_type and\
                     data_type != 'unsat_demand' and\
                     data_type != 'h_drought' and\
-                    data_type != 'CWDtoD':
+                    data_type != 'CWDtoD' and\
+                    data_type != 'ratio_min_to_discharge':
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white','blue'],256)
     else:
         cmap1 = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',['white',(0.9,0.1,0.1)],256)
@@ -382,7 +383,8 @@ def cascade(
        data_type == 'unsat_demand' or\
        data_type == 'tot_consumed':
         plt.xlabel('$Min\,$', fontsize = 14)
-
+    elif data_type == 'ratio_min_to_discharge':
+            plt.xlabel('$Min/Discharge\,$', fontsize = 14)        
     elif data_type == 'instream' or \
         data_type == 'CWDtoD':
             plt.xlabel('$Max\,$', fontsize = 14)
@@ -584,6 +586,10 @@ def cascade(
 
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         plt.xlabel('$Avg\, Fraction$\n[-]', fontsize = 14)
+
+    elif  data_type == 'ratio_min_to_discharge':
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
+        plt.xlabel('$Min\, 7D\,Ratio$ [-]', fontsize = 14)
         
     elif data_type == 'instream':
         
@@ -779,6 +785,7 @@ def collect_data( \
     import constants_cp as cst   # constants.py contains constants used here
     from movingaverage import movingaverage
     from compare import compare_rows
+    import rules
     
     ###############################
     # Read data in from csv files #
@@ -1073,6 +1080,11 @@ def collect_data( \
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_instream rights'
         plot_structure = '3 by 2'
+    elif data_type == 'ratio_min_to_discharge':
+        time = data_v[:,0]
+        data_yr = data_v[:,1]
+        graph_name = 'ratio min_to_discharge at Salem'
+        plot_structure = '3 by 2'
     elif data_type == 'tot_consumed' or data_type == 'CWDtoD':
         time = data_v[:,0]
         data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
@@ -1200,7 +1212,8 @@ def collect_data( \
     start_year = 2011
     end_year = 2011 + num_water_yrs
 
-    if  not data_type == 'temperature':          # If true, then replace max and min in cascade plot
+    if  not data_type == 'temperature' and \
+        not data_type == 'ratio_min_to_discharge':          # If true, then replace max and min in cascade plot
         plot_lower_bound = np.percentile(data_yr,5)
         plot_upper_bound = np.percentile(data_yr,95)
     elif data_type == 'temperature':
@@ -1253,6 +1266,12 @@ def collect_data( \
         data_2D_hd = np.vstack((data_2D_hd1, data_2D_hd2, data_2D_hd3))
         Q10 = np.percentile(data_2D_hd,10.,axis=0)
         data_2D = compare_rows(data_2D,Q10)
+    elif data_type == 'ratio_min_to_discharge':
+        min_flows = rules.get_min_flows('Salem','minQ',np.shape(data_2D)[0])
+        data_2D = np.divide(min_flows,data_2D)
+        plot_lower_bound = np.percentile(data_2D,5)
+        plot_upper_bound = np.percentile(data_2D,95)
+        
     data_2D_clipped = np.empty_like(data_2D)
     data_2D_clipped = np.clip(data_2D, plot_lower_bound, plot_upper_bound)
     
@@ -1343,7 +1362,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_min_decadal
                   
-    elif data_type == 'CWDtoD':
+    elif data_type == 'CWDtoD' or data_type == 'ratio_min_to_discharge':
 
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         extra = np.median(Q_max[-9:])
@@ -1562,7 +1581,11 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
         else:
             ylabel2 = '$Tot \,Consump\, Extract \,$ [cfs]'
             ylabel4 = '$Consump,$ [cfs]'
-                  
+    
+    elif data_type == 'ratio_min_to_discharge':
+        ylabel2 = '$Ratio\, Min/Disch$ [-]'
+        ylabel4 = '$Ratio$ [-]'
+           
     elif data_type == 'CWDtoD':
         ylabel2 = '$Frac\, Extract \,$ [-]'
         ylabel4 = '$Frac$ [-]'
