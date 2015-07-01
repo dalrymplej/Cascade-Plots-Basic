@@ -385,6 +385,8 @@ def cascade(
         plt.xlabel('$Min\,$', fontsize = 14)
     elif data_type == 'ratio_min_to_discharge':
             plt.xlabel('$Max\, Ratio$', fontsize = 14)        
+    elif data_type == 'ratio_avail_to_consum' :
+            plt.xlabel('$Min\, Ratio$', fontsize = 14)        
     elif data_type == 'instream' or \
         data_type == 'CWDtoD':
             plt.xlabel('$Max\,$', fontsize = 14)
@@ -587,9 +589,13 @@ def cascade(
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         plt.xlabel('$Avg\, Fraction$\n[-]', fontsize = 14)
 
-    elif  data_type == 'ratio_min_to_discharge':
+    elif data_type == 'ratio_min_to_discharge':
         ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
         plt.xlabel('$Max\, Ratio\,$ [-]', fontsize = 14)
+        
+    elif data_type == 'ratio_avail_to_consum' :
+        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
+        plt.xlabel('$Min\, Ratio\,$ [-]', fontsize = 14)
         
     elif data_type == 'instream':
         
@@ -1085,6 +1091,22 @@ def collect_data( \
         data_yr = data_v[:,1]
         graph_name = 'ratio min_to_discharge at Salem'
         plot_structure = '3 by 2'
+    elif data_type == 'ratio_avail_to_consum':
+        time = data_v[:,0]
+        data_yr = data_v[:,1]
+        data_v2 = np.array(np.genfromtxt(file_model_csv_w_path.replace(
+            "Willamette_at_Salem_(m3_s)", "AltWaterMaster_Daily_Metrics"
+            ), delimiter=',',skip_header=1)) # Read 2nd csv file
+        data2_yr = np.add( np.add(data_v2[:,2], data_v2[:,3]), \
+                          np.add(data_v2[:,4],data_v2[:,5])   )
+        data_tmp = np.add(data_v2[:,4], data_v2[:,5])
+#       get average metro water used for Jan 1 - Feb 28:
+        data_return = [np.mean(data_tmp[365*i+2:365*i+33]) for i in range(len(data_yr)/365)]  #from Jan 3 to Feb 3
+        data_return = np.repeat(data_return,365) #repeat each element of data_return 365 times.  I.e., fill each row with same number
+        data2_yr -= data_return
+        data2_yr = data2_yr.clip(1.e-5) #prevent negative numbers or zeros
+        graph_name = 'ratio water_available_at_Salem to total_consumptive_use'
+        plot_structure = '3 by 2'
     elif data_type == 'tot_consumed' or data_type == 'CWDtoD':
         time = data_v[:,0]
         data_yr = np.add( np.add(data_v[:,2], data_v[:,3]), \
@@ -1204,8 +1226,9 @@ def collect_data( \
         
     time = time[cst.day_of_year_oct1 - 1:] # water year    
     data_yr = data_yr[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # truncate data to water year
-    
-    if data_type == 'tot_damdiff':
+    if data_type == 'ratio_avail_to_consum':
+        data2_yr = data2_yr[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # truncate data to water year
+    elif data_type == 'tot_damdiff':
         data_yr_tmp = data_yr_tmp[cst.day_of_year_oct1:-(365-cst.day_of_year_oct1)] # water year
     data_length = len(time)
     num_water_yrs = len(time)/365
@@ -1213,7 +1236,8 @@ def collect_data( \
     end_year = 2011 + num_water_yrs
 
     if  not data_type == 'temperature' and \
-        not data_type == 'ratio_min_to_discharge':          # If true, then replace max and min in cascade plot
+        not data_type == 'ratio_min_to_discharge' and \
+        not data_type == 'ratio_avail_to_consum':          # If true, then replace max and min in cascade plot
         plot_lower_bound = np.percentile(data_yr,5)
         plot_upper_bound = np.percentile(data_yr,95)
     elif data_type == 'temperature':
@@ -1253,6 +1277,10 @@ def collect_data( \
         data_2D = np.subtract(data_2D_tmp,np.multiply(data_2D, how_much_outflow_bigger_than_inflow[:,None]))
         plot_lower_bound = np.percentile(data_2D,5)
         plot_upper_bound = np.percentile(data_2D,97.5)
+    elif data_type == 'ratio_avail_to_consum':     
+        data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
+        data_2D_denominator = np.reshape(np.array(data2_yr), (-1,365)) #2D matrix of data in numpy format
+       
     else:     ## All cases other than above
         data_2D = np.reshape(np.array(data_yr), (-1,365)) #2D matrix of data in numpy format
         
@@ -1269,6 +1297,13 @@ def collect_data( \
     elif data_type == 'ratio_min_to_discharge':
         min_flows = rules.get_min_flows('Salem','minQ',np.shape(data_2D)[0])
         data_2D = np.divide(min_flows,data_2D)
+        plot_lower_bound = np.percentile(data_2D,5)
+        plot_upper_bound = np.percentile(data_2D,95)
+    elif data_type == 'ratio_avail_to_consum':
+        min_flows = rules.get_min_flows('Salem','minQ',np.shape(data_2D)[0])
+        data_2D_numerator = np.subtract(data_2D,min_flows)
+        data_2D = np.divide(data_2D_numerator,data_2D_denominator)
+        data_2D = data_2D.clip(-10.,2.)
         plot_lower_bound = np.percentile(data_2D,5)
         plot_upper_bound = np.percentile(data_2D,95)
         
@@ -1375,6 +1410,13 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         extra = np.median(Q_max[-9:])
         Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_max_decadal
+
+    elif data_type == 'ratio_avail_to_consum':
+
+        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        extra = np.median(Q_min[-9:])
+        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+        data_set_rhs_1 = Q_min_decadal
 
     elif data_type == 'instream':
 
@@ -1508,6 +1550,13 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
             window)[averaging_window:-averaging_window]
         data_set_rhs_3 = yearly_max
         
+    elif data_type == 'ratio_avail_to_consum':
+        yearly_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+        yearly_min = movingaverage(
+            yearly_min[:averaging_window] + yearly_min + yearly_min[-averaging_window:],
+            window)[averaging_window:-averaging_window]
+        data_set_rhs_3 = yearly_min
+        
     elif data_type != 'swe_pre' and data_type != 'water_deficit':   ###THIS IS MOST CASES ***
         yearly_avg = [np.mean(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
         yearly_avg = movingaverage(
@@ -1598,8 +1647,8 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Tot \,Consump\, Extract \,$ [cfs]'
             ylabel4 = '$Consump,$ [cfs]'
     
-    elif data_type == 'ratio_min_to_discharge':
-        ylabel2 = '$Ratio\, Min/Disch$ [-]'
+    elif data_type == 'ratio_min_to_discharge' or data_type == 'ratio_avail_to_consum':
+        ylabel2 = '$Ratio\, Available/Consumptive$ [-]'
         ylabel4 = '$Ratio$ [-]'
            
     elif data_type == 'CWDtoD':
