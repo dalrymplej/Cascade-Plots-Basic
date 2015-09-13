@@ -30,3 +30,6 @@ def movingaverage_first2D(array_2D, window_size_days, window_size_yrs):
     interval = [np.average(array_2D[0:window_size_yrs,i]) for i in range(365)]
     window = np.ones(int(window_size_days))/float(window_size_days)
     return np.convolve(interval, window, 'same')
+
+# Wikipedia article at https://en.wikipedia.org/wiki/Gaussian_filter says
+# a gaussian kernel has sigma = (n + 1)/6.  I.e., sigma = 3 y has a window 17 long.
