@@ -740,7 +740,7 @@ def cascade(
               '\n\n' + ' Graph generated on ' + str(datetime.date.today()) +\
               '\n\n' + ' File: ' + file_title +\
               '\n\n' + ' Data downloaded on ' + timetool.ctime(os.path.getctime(file_model_csv_w_path))
-    if error_check: textstr = textstr + '\n\n' + 'Mass balance error = ' + mass_balance_err_str
+#    if error_check: textstr = textstr + '\n\n' + 'Mass balance error = ' + mass_balance_err_str
     if data_type == 'h_drought': textstr = textstr + '\n\n' +\
     'Hydrological drought as defined in $Prudhomme \, et \, al., \, PNAS$, 2013.'
     props = dict(boxstyle='round', facecolor='white', alpha=0.5, lw=0.)
@@ -1095,7 +1095,7 @@ def collect_data( \
         time = data_v[:,0]
         data_yr = data_v[:,1]
         data_v2 = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "Willamette_at_Salem_(m3_s)", "AltWaterMaster_Daily_Metrics"
+            "Willamette_at_Salem_(m3_s)", "ALTWM_Daily_Metrics"
             ), delimiter=',',skip_header=1)) # Read 2nd csv file
         data2_yr = np.add( np.add(data_v2[:,2], data_v2[:,3]), \
                           np.add(data_v2[:,4],data_v2[:,5])   )
@@ -1123,7 +1123,7 @@ def collect_data( \
             plot_structure = '4 by 2'
         elif data_type == 'CWDtoD':
             data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-                "AltWaterMaster_Daily_Metrics", "Willamette_at_Portland_(m3_s)"
+                "ALTWM_Daily_Metrics", "Willamette_at_Portland_(m3_s)"
                 ), delimiter=',',skip_header=1)) # Read csv file
             data_yr = data_yr/data_tmp[:,1]
             graph_name = file_model_csv[:-4] + '_tot consump use rel to Willamette'
@@ -1143,7 +1143,7 @@ def collect_data( \
 #            "HBV_ET_(mm)_by_elev_0-200-1200_Ref_Run0", "Daily_WaterMaster_Metrics"
 #            ), delimiter=',',skip_header=1)) # Read csv file
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
-            "HBV_ET_(mm)_by_elev_0-200-1200", "AltWaterMaster_Daily_Metrics"
+            "HBV_ET_(mm)_by_elev_0-200-1200", "ALTWM_Daily_Metrics"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_irrig = np.add(data_tmp[:,2], data_tmp[:,3])
         
