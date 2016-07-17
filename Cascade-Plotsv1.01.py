@@ -1018,7 +1018,7 @@ def collect_data( \
         data_type = 'water_deficit'  # from here on, treat as basin-wide water_deficit
     elif data_type == 'irrigation': 
         time = data_v[:,0]
-        data_yr = np.add(data_v[:,4], data_v[:,5])
+        data_yr = np.add(data_v[:,4], data_v[:,5])/86400.  #convert per day to per second
         if not SI:
             data_yr = data_yr/cst.acftperday_to_m3s
         graph_name = file_model_csv[:-4] + '_irrigation'
@@ -1537,7 +1537,7 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
             if not SI:
                 data_set_rhs_3 = data_set_rhs_3*365/1000.
             else:
-                data_set_rhs_3 = data_set_rhs_3*365/1.e6
+                data_set_rhs_3 = data_set_rhs_3 #*365/1.e6
         elif data_type == 'instream':
             if not SI:
                 data_set_rhs_3 = data_set_rhs_3/1000.
