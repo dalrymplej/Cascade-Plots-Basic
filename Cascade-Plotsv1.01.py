@@ -226,7 +226,7 @@ def cascade(
 
     if data_type != 'temperature' and data_type != 'aridity' and\
                     'water_deficit' not in data_type and\
-                    data_type != 'unsat_demand' and\
+#                    data_type != 'unsat_demand' and\
                     data_type != 'h_drought' and\
                     data_type != 'CWDtoD' and\
                     data_type != 'ratio_min_to_discharge':
@@ -380,7 +380,7 @@ def cascade(
 
     elif data_type == 'tot_extract' or \
        data_type == 'aridity' or\
-       data_type == 'unsat_demand' or\
+#       data_type == 'unsat_demand' or\
        data_type == 'tot_consumed':
         plt.xlabel('$Min\,$', fontsize = 14)
     elif data_type == 'ratio_min_to_discharge':
@@ -462,7 +462,7 @@ def cascade(
             plt.xlabel('$Max \, T$', fontsize = 14)
         elif data_type == 'tot_extract' or\
              data_type == 'aridity' or\
-             data_type == 'unsat_demand' or\
+#             data_type == 'unsat_demand' or\
              data_type == 'tot_consumed':
             plt.xlabel('$Max \,$', fontsize = 14)
 
@@ -606,13 +606,13 @@ def cascade(
             ax5.plot(data_set_rhs_3/1000., range(start_year,end_year), color=line_shade, lw=1.5)
             plt.xlabel('$Avg \, Right\,$\n[thousand ac-ft/d]', fontsize = 14)
 
-    elif data_type == 'unsat_demand':
-
-        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
-        if SI:
-            plt.xlabel('$Avg \, Unsat\,$\n[m$^3$/s]', fontsize = 14)
-        else:
-            plt.xlabel('$Avg \, Unsat\,$\n[thousand ac-ft]', fontsize = 14)
+#    elif data_type == 'unsat_demand':
+#
+#        ax5.plot(data_set_rhs_3, range(start_year,end_year), color=line_shade, lw=1.5)
+#        if SI:
+#            plt.xlabel('$Avg \, Unsat\,$\n[m$^3$/s]', fontsize = 14)
+#        else:
+#            plt.xlabel('$Avg \, Unsat\,$\n[thousand ac-ft]', fontsize = 14)
 
     elif data_type == 'aridity':
 
@@ -1128,14 +1128,14 @@ def collect_data( \
             data_yr = data_yr/data_tmp[:,1]
             graph_name = file_model_csv[:-4] + '_tot consump use rel to Willamette'
             plot_structure = '3 by 2'
-    elif data_type == 'unsat_demand':
-        time = data_v[:,0]
-        data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
-                          np.add(data_v[:,16],data_v[:,17])   )
-        if not SI:
-            data_yr = data_yr/cst.acftperday_to_m3s
-        graph_name = file_model_csv[:-4] + '_total unsatisfied demand'
-        plot_structure = '4 by 2'
+#    elif data_type == 'unsat_demand':
+#        time = data_v[:,0]
+#        data_yr = np.add( np.add(data_v[:,14], data_v[:,15]), \
+#                          np.add(data_v[:,16],data_v[:,17])   )
+#        if not SI:
+#            data_yr = data_yr/cst.acftperday_to_m3s
+#        graph_name = file_model_csv[:-4] + '_total unsatisfied demand'
+#        plot_structure = '4 by 2'
     elif data_type == 'aridity':
         time = data_v[:,0]
         data_pet = data_v[:,2]
@@ -1426,17 +1426,17 @@ def process_data(data_2D, data_yr, num_water_yrs, data_length, \
         Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
         data_set_rhs_1 = Q_max_decadal
                
-    elif data_type == 'unsat_demand':
-
-        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
-        extra = np.median(Q_max[-9:])
-        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_2 = Q_max_decadal
-        
-        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
-        extra = np.median(Q_min[-9:])
-        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
-        data_set_rhs_1 = Q_min_decadal
+#    elif data_type == 'unsat_demand':
+#
+#        Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
+#        extra = np.median(Q_max[-9:])
+#        Q_max_decadal = np.reshape(np.append(Q_max, extra), (9,-1)) #2D matrix of decadal data
+#        data_set_rhs_2 = Q_max_decadal
+#        
+#        Q_min = [np.amin(data_2D[i,:]) for i in range(num_water_yrs)]  # min discharge
+#        extra = np.median(Q_min[-9:])
+#        Q_min_decadal = np.reshape(np.append(Q_min, extra), (9,-1)) #2D matrix of decadal data
+#        data_set_rhs_1 = Q_min_decadal
                   
     elif data_type == 'aridity':
         Q_max = [np.amax(data_2D[i,:]) for i in range(num_water_yrs)]  # max discharge
@@ -1663,13 +1663,13 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
             ylabel2 = '$Instream \,Rights$ [ac-ft/d]'
             ylabel4 = '$Instream$ [ac-ft/d]'
                   
-    elif data_type == 'unsat_demand':
-        if SI:
-            ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
-            ylabel4 = '$Uns\,Dmd\,$ [m$^{\t{3}}$/s]'
-        else:
-            ylabel2 = '$Unsat \,Demand \,$ [cfs]'
-            ylabel4 = '$Uns\,Dmd\,$ [cfs]'
+#    elif data_type == 'unsat_demand':
+#        if SI:
+#            ylabel2 = '$Unsat \,Demand \,$ [m$^{\t{3}}$/s]'
+#            ylabel4 = '$Uns\,Dmd\,$ [m$^{\t{3}}$/s]'
+#        else:
+#            ylabel2 = '$Unsat \,Demand \,$ [cfs]'
+#            ylabel4 = '$Uns\,Dmd\,$ [cfs]'
                   
     elif data_type == 'aridity':
         ylabel2 = '$Aridity \,Index$ [-]'
