@@ -64,6 +64,7 @@ days_in_15_yrs = 15*365
 days_in_30_yrs = 30*365
 days_in_60_yrs = 60*365
 million_peryr_factor = 365*86400/1.e6
+perday_to_millionperyear = 365/1.e6
 
 def paths():
     import xlrd
