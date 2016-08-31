@@ -1025,14 +1025,21 @@ def collect_data( \
         plot_structure = '3 by 2'
     elif data_type == 'municipal' or data_type == 'muni_less_disch': 
         time = data_v[:,0]
-        data_yr = np.add(data_v[:,4], data_v[:,5])
+        # jd30160815 - data being pulled from wrong cols
+        # data_yr = np.add(data_v[:,4], data_v[:,5])
+        # correct cols for 3.0 plots
+        data_yr = np.add(data_v[:,1], data_v[:,2])
         if data_type == 'muni_less_disch':
             data_tmp = data_yr
             data_return = [np.mean(data_tmp[365*i+2:365*i+33]) for i in range(len(data_yr)/365)]  #from Jan 3 to Feb 3
             data_return = np.repeat(data_return,365) #repeat each element of data_return 365 times.  I.e., fill each row with same number
             data_yr -= data_return
         if not SI:
-            data_yr = data_yr/cst.acftperday_to_m3s
+            # jd20160815 - HACK
+            #data_yr = data_yr / cst.acftperday_to_m3s
+            secs_per_day = 60 * 60 * 24;
+            data_yr = (data_yr / cst.acftperday_to_m3s) / secs_per_day
+
         if data_type == 'municipal':
             graph_name = file_model_csv[:-4] + '_municipal'
         elif data_type == 'muni_less_disch':
@@ -1040,7 +1047,11 @@ def collect_data( \
         plot_structure = '3 by 2'
     elif data_type == 'muni_alloc_big4'  or data_type == 'muni_less_disch_big4': 
         time = data_v[:,0]
-        data_yr = data_v[:,1:5].sum(axis=1)
+        #jd20160816 - changed data columns for 3.0 plots per Dave Conklin
+        #data_yr = data_v[:,1:5].sum(axis=1)
+        data_yr = np.add(data_v[:,1], data_v[:,7]) # columns B and H
+        data_yr = np.add(data_yr,np.add(data_v[:,13], data_v[:,19])) # columns N and T
+
         if data_type == 'muni_less_disch_big4':
             data_tmp = data_yr
             data_return = [np.mean(data_tmp[365*i+2:365*i+33]) for i in range(len(data_yr)/365)]  #from Jan 3 to Feb 3
@@ -1126,14 +1137,18 @@ def collect_data( \
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "HBV_ET_(mm)_by_elev_0-200-1200", "ALTWM_Daily_Metrics"
             ), delimiter=',',skip_header=1)) # Read csv file
-        data_irrig = np.add(data_tmp[:,2], data_tmp[:,3])
+            
+        # jd20160815 - this calc pulls from wrong cols ; TBD    
+        #data_irrig = np.add(data_tmp[:,2], data_tmp[:,3])
         
         data_tmp = np.array(np.genfromtxt(file_model_csv_w_path.replace(
             "HBV_ET_(mm)_by_elev_0-200-1200", "HBV_Climate_by_elev_0-200-1200"
             ), delimiter=',',skip_header=1)) # Read csv file
         data_precip = data_tmp[:,2]
         
-        data_yr = data_pet/np.add(data_irrig, data_precip)
+        # jd20160815 - 3.0, not including irrigation in aridity index
+        #data_yr = data_pet/np.add(data_irrig, data_precip)
+        data_yr = data_pet / data_precip
         graph_name = file_model_csv[:-4] + '_Aridity_Index'
         plot_structure = '4 by 2'
     elif data_type == 'temperature':
@@ -1237,7 +1252,9 @@ def collect_data( \
     # re-shaping the array 
     if data_type == 'aridity':
         data_2D_num = np.add.accumulate(np.reshape(np.array(data_pet), (-1,365)),1)
-        data_2D_den = np.add.accumulate(np.reshape(np.array(np.add(data_irrig,data_precip)), (-1,365)),1)
+        # jd20160815 - removing irrigation from aridity calculation
+        #data_2D_den = np.add.accumulate(np.reshape(np.array(np.add(data_irrig,data_precip)), (-1,365)),1)
+        data_2D_den = np.add.accumulate(np.reshape(np.array(data_precip), (-1,365)),1)
         data_2D = np.divide(data_2D_num, data_2D_den)
     elif data_type == 'swe_pre':   # Calculate SWE/sum(Precip starting Nov 1)
         data_2D_num = np.reshape(np.array(data_swe), (-1,365)) #2D matrix of data in numpy format
@@ -1643,8 +1660,11 @@ def get_labels(data_2D, data_yr, num_water_yrs, data_length, \
     elif data_type == 'municipal' or data_type == 'muni_alloc_big4' or \
         data_type == 'muni_less_disch' or data_type == 'muni_less_disch_big4':
         if SI:
-            ylabel2 = '$Municipal\, Use\,$ [m$^3$/s]'
-            ylabel4 = '$Mncpl\, Use\,$ [m$^3$/s]'
+            # jd 20160815 - legend needs to be per day, not per sec (3.0 plot)
+            #ylabel2 = '$Municipal\, Use\,$ [m$^3$/s]'
+            #ylabel4 = '$Mncpl\, Use\,$ [m$^3$/s]'
+            ylabel2 = '$Municipal\, Use\,$ [m$^3$/day]'
+            ylabel4 = '$Mncpl\, Use\,$ [m$^3$/day]'
         else:
             ylabel2 = '$Municipal\, Use\,$ [ac-ft/d]'
             ylabel4 = '$Mncpl\, Use\,$ [ac-ft/d]'
